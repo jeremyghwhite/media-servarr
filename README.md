@@ -1,0 +1,170 @@
+# Media Servarr Docker Setup
+
+This repository contains a complete Docker setup for your *arr services stack, configured to work with network-mounted media from your PHOENIX server.
+
+## 🏗️ Architecture
+
+- **Media Server**: PHOENIX (Windows) - Contains all media files
+- **Docker Host**: New PC (Linux/WSL) - Runs all *arr services in Docker
+- **Network Access**: Mapped drives and WSL mounts for remote media access
+
+## 📁 Directory Structure
+
+```
+media-servarr/
+├── docker-compose.yaml          # Main Docker Compose configuration
+├── setup-docker.sh             # Linux/WSL setup script
+├── setup-docker.ps1            # Windows PowerShell setup script
+├── downloads/                   # Local downloads (ignored in git)
+├── backups/                    # Backup storage (structure tracked, files ignored)
+├── media/                      # Local media (structure tracked, files ignored)
+└── [service-configs]/          # Individual service configurations
+```
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+1. **Network Drive Mapping** (Windows):
+   ```powershell
+   net use D: \\PHOENIX\Data\Downloads /user:jeremy welcome
+   net use M: \\PHOENIX\Movies /user:jeremy welcome
+   net use N: \\PHOENIX\Music /user:jeremy welcome
+   net use P: \\PHOENIX\Photos /user:jeremy welcome
+   net use T: \\PHOENIX\tv /user:jeremy welcome
+   net use B: \\PHOENIX\Bookz /user:jeremy welcome
+   ```
+
+2. **WSL Mounts** (Linux/WSL):
+   ```bash
+   sudo mkdir -p /media-servarr/media/phoenix_movies
+   sudo mount -t drvfs '\\PHOENIX\Movies' /media-servarr/media/phoenix_movies
+   sudo mkdir -p /media-servarr/media/phoenix_tv
+   sudo mount -t drvfs '\\PHOENIX\tv' /media-servarr/media/phoenix_tv
+   sudo mkdir -p /media-servarr/media/phoenix_music
+   sudo mount -t drvfs '\\PHOENIX\Music' /media-servarr/media/phoenix_music
+   sudo mkdir -p /media-servarr/media/phoenix_books
+   sudo mount -t drvfs '\\PHOENIX\Bookz' /media-servarr/media/phoenix_books
+   sudo mkdir -p /media-servarr/media/phoenix_photos
+   sudo mount -t drvfs '\\PHOENIX\Photos' /media-servarr/media/phoenix_photos
+   sudo mkdir -p /media-servarr/media/phoenix_downloads
+   sudo mount -t drvfs '\\PHOENIX\Data\Downloads' /media-servarr/media/phoenix_downloads
+   ```
+
+### Setup
+
+**For Windows:**
+```powershell
+.\setup-docker.ps1
+```
+
+**For Linux/WSL:**
+```bash
+chmod +x setup-docker.sh
+./setup-docker.sh
+```
+
+## 🐳 Services
+
+| Service | Port | Description |
+|---------|------|-------------|
+| **Prowlarr** | 9696 | Indexer management |
+| **Radarr** | 7878 | Movie management |
+| **Sonarr** | 8989 | TV show management |
+| **Readarr** | 8787 | Book management |
+| **Lidarr** | 8686 | Music management |
+| **Bazarr** | 6767 | Subtitle management |
+| **qBittorrent** | 8080 | Torrent client |
+| **Jellyfin** | 8096 | Media server |
+| **Jellyseerr** | 5055 | Request management |
+| **AdGuard** | 3000 | DNS ad blocking |
+| **Vaultwarden** | 3012 | Password manager |
+| **Immich** | 2283 | Photo management |
+| **Home Assistant** | 8123 | Home automation |
+| **Joplin** | 22300 | Note taking |
+| **Tandoor** | 8081 | Recipe management |
+
+## 🔧 Configuration
+
+### Media Paths
+
+The Docker Compose file is configured with the following media paths:
+- Movies: `/media-servarr/media/phoenix_movies`
+- TV Shows: `/media-servarr/media/phoenix_tv`
+- Music: `/media-servarr/media/phoenix_music`
+- Books: `/media-servarr/media/phoenix_books`
+- Photos: `/media-servarr/media/phoenix_photos`
+- Downloads: `/media-servarr/media/phoenix_downloads`
+
+### Service Configuration
+
+Each service stores its configuration in its respective folder:
+- `./prowlarr/config/` - Prowlarr configuration
+- `./radarr/config/` - Radarr configuration
+- `./sonarr/config/` - Sonarr configuration
+- etc.
+
+## 🔄 Backup Strategy
+
+- **Backups folder**: Structure tracked in git, actual backup files ignored
+- **Media folder**: Structure tracked in git, actual media files ignored
+- **Downloads folder**: Structure tracked in git, download files ignored
+- **Configurations**: All service configs are tracked in git
+
+## 🚨 Troubleshooting
+
+### Network Drive Issues
+- Ensure network drives are properly mapped before starting services
+- Check that WSL mounts are active: `mount | grep phoenix`
+- Verify permissions on network shares
+
+### Service Access Issues
+- Check if ports are already in use: `netstat -tulpn | grep :PORT`
+- Verify Docker containers are running: `docker ps`
+- Check container logs: `docker logs CONTAINER_NAME`
+
+### Permission Issues
+- Ensure proper ownership: `sudo chown -R 1000:1000 .`
+- Check WSL mount permissions: `ls -la /media-servarr/media/`
+
+## 📝 Maintenance
+
+### Updates
+```bash
+docker-compose pull
+docker-compose up -d
+```
+
+### Backups
+```bash
+# Backup configurations
+tar -czf backup-$(date +%Y%m%d).tar.gz */config/
+
+# Restore configurations
+tar -xzf backup-YYYYMMDD.tar.gz
+```
+
+### Logs
+```bash
+# View all logs
+docker-compose logs
+
+# View specific service logs
+docker-compose logs radarr
+```
+
+## 🔐 Security Notes
+
+- Change default passwords for all services
+- Configure proper authentication
+- Use reverse proxy for external access
+- Keep services updated regularly
+- Monitor access logs
+
+## 📞 Support
+
+For issues specific to this setup:
+1. Check the troubleshooting section
+2. Review Docker and service logs
+3. Verify network connectivity to PHOENIX server
+4. Ensure proper file permissions and ownership

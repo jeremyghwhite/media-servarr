@@ -1,0 +1,15 @@
+# Ignore everything at the repo root by default
+/*
+
+# Allow only these files/dirs to be tracked
+!.gitignore
+!README.md
+!docker-compose.yaml
+!compose*.yml
+!.env.example
+!setup-*.sh
+!setup-*.ps1
+
+# Keep DB/init snippets that are part of deployment
+!immich-db-init/
+!immich-db-init/**
