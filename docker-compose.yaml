@@ -3,16 +3,17 @@ services:
   # Download Clients
   # -------------------
   qbittorrent:
-    image: linuxserver/qbittorrent:latest
     container_name: qbittorrent
+    image: linuxserver/qbittorrent:latest
     environment:
-      - PUID: ${PUID}
-      - PGID: ${PGID}
-      - TZ: ${TZ}
-      - WEBUI_PORT: ${QBITTORRENT_WEB_PORT}
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+      WEBUI_PORT: ${QBITTORRENT_WEB_PORT}
     volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${QBITTORRENT_CONFIG}:/config
-      - ${DATA_ROOT}/${DOWNLOADS}:/downloads
+      - ${DATA_ROOT}/${DOWNLOADS}:/data/downloads
     ports:
       - "${QBITTORRENT_WEB_PORT}:${QBITTORRENT_WEB_PORT}"
       - "6881:6881"
@@ -20,17 +21,18 @@ services:
     restart: unless-stopped
     
   sabnzbd:
-    image: ghcr.io/hotio/sabnzbd:latest
     container_name: sabnzbd
+    image: ghcr.io/hotio/sabnzbd:latest
     environment:
-      - PUID: ${PUID}
-      - PGID: ${PGID}
-      - TZ: "${TZ}"
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: "${TZ}"
     volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${SABNZBD_CONFIG}:/config
-      - ${DATA_ROOT}/${DOWNLOADS}:/downloads
+      - ${DATA_ROOT}/${DOWNLOADS}:/data/downloads
     ports:
-      - "${SABNZBD_WEB_PORT}:${SABNZBD_WEB_PORT}"
+      - "${SABNZBD_WEB_PORT}:8080"
       - "9090:9090"
     restart: unless-stopped
 
@@ -38,13 +40,14 @@ services:
   # Indexer
   # -------------------
   prowlarr:
-    image: linuxserver/prowlarr:latest
     container_name: prowlarr
+    image: linuxserver/prowlarr:latest
     environment:
-      - PUID: ${PUID}
-      - PGID: ${PGID}
-      - TZ: ${TZ}
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
     volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${PROWLARR_CONFIG}:/config
     ports:
       - "${PROWLARR_PORT}:${PROWLARR_PORT}"
@@ -54,16 +57,17 @@ services:
   # Movies
   # -------------------
   radarr:
-    image: linuxserver/radarr:develop
     container_name: radarr
+    image: linuxserver/radarr:develop
     environment:
-      - PUID: ${PUID}
-      - PGID: ${PGID}
-      - TZ: ${TZ}
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
     volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${RADARR_CONFIG}:/config
-      - ${DATA_ROOT}/${MEDIA_MOVIES}:/movies
-      - ${DATA_ROOT}/${DOWNLOADS}:/downloads
+      - ${DATA_ROOT}/${MEDIA_MOVIES}:/data/movies
+      - ${DATA_ROOT}/${DOWNLOADS}:/data/downloads
     ports:
       - "${RADARR_PORT}:${RADARR_PORT}"
     restart: unless-stopped
@@ -72,16 +76,18 @@ services:
   # TV Shows
   # -------------------
   sonarr:
-    image: linuxserver/sonarr:develop
     container_name: sonarr
+    image: linuxserver/sonarr:develop
     environment:
-      - PUID: ${PUID}
-      - PGID: ${PGID}
-      - TZ: ${TZ}
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
     volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${SONARR_CONFIG}:/config
-      - ${DATA_ROOT}/${MEDIA_TV}:/tv:rw
-      - ${DATA_ROOT}/${DOWNLOADS}:/downloads
+      - ${DATA_ROOT}/${MEDIA_TV}:/data/tv:rw
+      - ${DATA_ROOT}/${MEDIA_TV_HOWARD_STERN}:/data/howard-stern:rw
+      - ${DATA_ROOT}/${DOWNLOADS}:/data/downloads
     ports:
       - "${SONARR_PORT}:${SONARR_PORT}"
     restart: unless-stopped
@@ -90,16 +96,17 @@ services:
   # Books
   # -------------------
   readarr:
-    image: ghcr.io/hotio/readarr:latest
     container_name: readarr
+    image: ghcr.io/hotio/readarr:latest
     environment:
-      - PUID: ${PUID}
-      - PGID: ${PGID}
-      - TZ: ${TZ}
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
     volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${READARR_CONFIG}:/config
-      - ${DATA_ROOT}/${MEDIA_BOOKS}:/books
-      - ${DATA_ROOT}/${DOWNLOADS}:/downloads
+      - ${DATA_ROOT}/${MEDIA_BOOKS}:/data/books
+      - ${DATA_ROOT}/${DOWNLOADS}:/data/downloads
     ports:
       - "${READARR_PORT}:${READARR_PORT}"
     restart: unless-stopped
@@ -108,12 +115,13 @@ services:
     container_name: calibre-web
     image: linuxserver/calibre-web
     environment:
-      - PUID: ${PUID}
-      - PGID: ${PGID}
-      - TZ: ${TZ}
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
     volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${CALIBRE_CONFIG}:/config
-      - ${DATA_ROOT}/${MEDIA_BOOKS}:/books
+      - ${DATA_ROOT}/${MEDIA_BOOKS}:/data/books
     ports:
       - "${CALIBRE_PORT}:${CALIBRE_PORT}"
     restart: unless-stopped
@@ -122,37 +130,77 @@ services:
   # Music
   # -------------------
   lidarr:
-    image: linuxserver/lidarr:develop
     container_name: lidarr
+    image: linuxserver/lidarr:develop
     environment:
-      - PUID: ${PUID}
-      - PGID: ${PGID}
-      - TZ: ${TZ}
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
     volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${LIDARR_CONFIG}:/config
-      - ${DATA_ROOT}/${MEDIA_MUSIC}:/music
-      - ${DATA_ROOT}/${DOWNLOADS}:/downloads
+      - ${DATA_ROOT}/${MEDIA_MUSIC}:/data/music
+      - ${DATA_ROOT}/${DOWNLOADS}:/data/downloads
     ports:
       - "${LIDARR_PORT}:${LIDARR_PORT}"
+    restart: unless-stopped
+
+  # -------------------
+  # Adult Media
+  # -------------------
+  whisparr:
+    container_name: whisparr
+    image: ghcr.io/hotio/whisparr:latest
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+    volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
+      - ${DATA_ROOT}/${WHISPARR_CONFIG}:/config
+      - ${DATA_ROOT}/${MEDIA_ADULT}:/data/adult
+      - ${DATA_ROOT}/${DOWNLOADS}:/data/downloads
+    ports:
+      - "${WHISPARR_PORT}:${WHISPARR_PORT}"
     restart: unless-stopped
 
   # -------------------
   # Subtitles
   # -------------------
   bazarr:
-    image: ghcr.io/hotio/bazarr:latest
     container_name: bazarr
+    image: ghcr.io/hotio/bazarr:latest
     environment:
-      - PUID: ${PUID}
-      - PGID: ${PGID}
-      - TZ: ${TZ}
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
     volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${BAZARR_CONFIG}:/config
-      - ${DATA_ROOT}/${MEDIA_TV}:/tv
-      - ${DATA_ROOT}/${MEDIA_MOVIES}:/movies
+      - ${DATA_ROOT}/${MEDIA_TV}:/data/tv
+      - ${DATA_ROOT}/${MEDIA_MOVIES}:/data/movies
     ports:
-      - "${BAZARR_PORT}:${BAZARR_PORT}"
+      - "${BAZARR_PORT}:6767"
     restart: unless-stopped
+    
+  subgenai:
+    container_name: subgenai
+    image: mccloud/subgen:cpu
+    tty: true
+    depends_on:
+      bazarr:
+        condition: service_started
+    environment:
+      WEBHOOKPORT: ${SUBGEN_PORT}
+      PLEXTOKEN: ${PLEX_TOKEN}
+      PLEXSERVER: http://plex:${PLEX_PORT}
+    volumes:
+       - ${DATA_ROOT}/${MEDIA_TV}:/data/tv
+       - ${DATA_ROOT}/${MEDIA_MOVIES}:/data/movies
+       - ${DATA_ROOT}/${SUBGENAI_DATA}/models:/subgen/models
+       - ${DATA_ROOT}/${SUBGENAI_DATA}/subgen.env:/subgen/subgen.env:ro
+    ports:
+       - "${SUBGEN_PORT}:9000"
 
   # -------------------
   # Media Servers
@@ -161,32 +209,36 @@ services:
     container_name: plex
     image: linuxserver/plex
     environment:
-      - PUID: ${PUID}
-      - PGID: ${PGID}
-      - TZ: ${TZ}
-      - VERSION: latest
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+      VERSION: latest
     volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${PLEX_CONFIG}:/config
-      - ${DATA_ROOT}/${MEDIA_TV}:/data/tvshows
+      - ${DATA_ROOT}/${MEDIA_TV}:/data/tv
+      - ${DATA_ROOT}/${MEDIA_TV_HOWARD_STERN}:/data/howard-stern
       - ${DATA_ROOT}/${MEDIA_MOVIES}:/data/movies
       - ${DATA_ROOT}/${MEDIA_MUSIC}:/data/music
       - ${DATA_ROOT}/${MEDIA_PHOTOS}:/data/photos
     ports:
-      - "${PLEX_PORT}:${PLEX_PORT}"
+      - "${PLEX_PORT}:32400"
     restart: unless-stopped
 
   jellyfin:
-    image: jellyfin/jellyfin:latest
     container_name: jellyfin
+    image: jellyfin/jellyfin:latest
     environment:
-      - PUID: ${PUID}
-      - PGID: ${PGID}
-      - TZ: ${TZ}
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
     volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${JELLYFIN_CONFIG}:/config
       - ${DATA_ROOT}/${JELLYFIN_CACHE}:/cache
       - ${DATA_ROOT}/${MEDIA_MOVIES}:/data/movies
       - ${DATA_ROOT}/${MEDIA_TV}:/data/tv
+      - ${DATA_ROOT}/${MEDIA_TV_HOWARD_STERN}:/data/howard-stern
       - ${DATA_ROOT}/${MEDIA_MUSIC}:/data/music
       - ${DATA_ROOT}/${MEDIA_PHOTOS}:/data/photos
     ports:
@@ -197,43 +249,28 @@ services:
   # Request Management
   # -------------------
   jellyseerr:
-    image: fallenbagel/jellyseerr:latest
     container_name: jellyseerr
+    image: fallenbagel/jellyseerr:latest
     environment:
-      - LOG_LEVEL: debug
-      - TZ: ${TZ}
+      LOG_LEVEL: debug
+      TZ: ${TZ}
     volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${JELLYSEERR_CONFIG}:/app/config
     ports:
       - "${JELLYSEERR_PORT}:${JELLYSEERR_PORT}"
     restart: unless-stopped
 
   # -------------------
-  # Ad Blocker
-  # -------------------
-  adguard:
-    image: adguard/adguardhome:latest
-    container_name: adguard
-    environment:
-      - TZ: ${TZ}
-    volumes:
-      - ${DATA_ROOT}/${ADGUARD_DATA}:/opt/adguardhome/work
-      - ${DATA_ROOT}/${ADGUARD_CONFIG}:/opt/adguardhome/conf
-    ports:
-      - "${ADGUARD_PORT}:${ADGUARD_PORT}/tcp"
-      - "${ADGUARD_WEB_PORT}:80/tcp"
-      - "${ADGUARD_SSL_PORT}:${ADGUARD_SSL_PORT}/tcp"
-    restart: unless-stopped
-
-  # -------------------
   # Password Manager
   # -------------------
   vaultwarden:
-    image: vaultwarden/server:latest
     container_name: vaultwarden
+    image: vaultwarden/server:latest
     environment:
-      - WEBSOCKET_ENABLED: "true"
+      WEBSOCKET_ENABLED: "true"
     volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${VAULT_CONFIG}:/data
     ports:
       - "${VAULT_PORT}:80"
@@ -243,58 +280,104 @@ services:
   # Photo Management
   # -------------------
   immich:
-    image: ghcr.io/immich-app/immich-server:release
     container_name: immich
+    image: ghcr.io/immich-app/immich-server:release
     depends_on:
       database:
         condition: service_healthy
       redis:
         condition: service_started
     environment:
-      - TZ: ${TZ}
-      - DB_URL: postgres://${IMMICH_DB_USER}:${IMMICH_DB_PASS}@database:5432/immich
-      - IMMICH_LOG_LEVEL: info
-      - REDIS_HOSTNAME: redis
+      TZ: ${TZ}
+      DB_URL: postgres://${IMMICH_DB_USER}:${IMMICH_DB_PASS}@database:5432/immich
+      IMMICH_LOG_LEVEL: log
+      REDIS_HOSTNAME: redis
     ports:
       - "${IMMICH_PORT}:${IMMICH_PORT}"
     volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${IMMICH_CONFIG}:/config
       - ${DATA_ROOT}/${MEDIA_PHOTOS}:/usr/src/app/upload
     restart: unless-stopped
 
   database:
+    container_name: postgres
     image: pgvector/pgvector:pg15
-    container_name: immich_postgres
     environment:
-      - POSTGRES_DB: immich
-      - POSTGRES_USER: ${IMMICH_DB_USER}
-      - POSTGRES_PASSWORD: ${IMMICH_DB_PASS}
-      - POSTGRES_INITDB_ARGS: "--locale-provider=icu --icu-locale=en-US"
-      - TZ: ${TZ}
+      POSTGRES_INITDB_ARGS: "--locale-provider=icu --icu-locale=en-US"
+      TZ: ${TZ}
+      POSTGRES_PASSWORD: ${POSTGRES_PASS}
+      POSTGRES_USER: ${POSTGRES_USER}      
     volumes:
-      - /var/lib/immich_postgres:/var/lib/postgresql/data
-      - ./immich-db-init:/docker-entrypoint-initdb.d
+      - ${DATA_ROOT}/${BACKUPS}:/backup
+      - /var/lib/postgres-data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${IMMICH_DB_USER} -d immich"]
       interval: 5s
       timeout: 5s
       retries: 5
+      
+  postgres-backup:
+    image: postgres:15
+    container_name: postgres-backup
+    depends_on:
+      - database
+    environment:
+      POSTGRES_HOST: database
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASS}
+      TZ: America/Halifax
+    volumes:
+      - /home/jeremy/media-servarr-app-data/server-backups:/backups
+    entrypoint: /bin/bash
+    command: >
+      /bin/bash -c "
+      set -e;
+      export PGPASSWORD=\"\${POSTGRES_PASSWORD}\";
+      DATE=\$(date +%Y-%m-%d_%H-%M);
+      echo '=== Starting PostgreSQL multi-database backup at' \$DATE '===';
+      
+      SQL=\"SELECT datname FROM pg_database WHERE datistemplate = false AND datname NOT IN ('postgres','template0','template1');\";
+      DBS=\$(psql -h \"\${POSTGRES_HOST}\" -U \"\${POSTGRES_USER}\" -p \"\${POSTGRES_PORT}\" -t -c \"\$SQL\");
+
+      for DB in \$DBS; do
+        DB=\$(echo \"\$DB\" | xargs);
+        echo '--- Backing up' \$DB '---';
+        DB_DIR=\"/backups/\$DB\";
+        mkdir -p \"\$DB_DIR\";
+        FILE=\"\$DB_DIR/\${DB}_\${DATE}.sql.gz\";
+        pg_dump -h \"\${POSTGRES_HOST}\" -U \"\${POSTGRES_USER}\" -p \"\${POSTGRES_PORT}\" \"\$DB\" | gzip > \"\$FILE\";
+        echo 'Backup complete:' \$FILE;
+
+        cd \"\$DB_DIR\";
+        ls -1t \${DB}_*.sql.gz | tail -n +4 | xargs -r rm --;
+        echo 'Old backups pruned for' \$DB;
+      done;
+
+      echo '=== All database backups finished ===';
+      "
+
+
+
     
   redis:
-    image: redis:7
     container_name: immich_redis
+    image: redis:7
     restart: unless-stopped
 
   # -------------------
   # Home Automation
   # -------------------
   homeassistant:
-    image: ghcr.io/home-assistant/home-assistant:stable
     container_name: homeassistant
+    image: ghcr.io/home-assistant/home-assistant:stable
     environment:
-      - TZ: ${TZ}
+      TZ: ${TZ}
     volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${HOMEASSISTANT_CONFIG}:/config
     ports:
       - "${HOMEASSISTANT_PORT}:${HOMEASSISTANT_PORT}"
@@ -304,13 +387,23 @@ services:
   # Note Taking
   # -------------------
   joplin:
-    image: joplin/server:latest
     container_name: joplin
+    image: joplin/server:latest
+    depends_on:
+      database:
+        condition: service_healthy
     environment:
-      - APP_BASE_URL: https://your-domain.com
-      - APP_PORT: ${JOPLIN_PORT}
+      APP_BASE_URL: http://fubarmedia.servebeer.com
+      APP_PORT: ${JOPLIN_PORT}
+      POSTGRES_HOST: database
+      POSTGRES_PORT: 5432
+      POSTGRES_DATABASE: joplin
+      POSTGRES_USER: ${JOPLIN_DB_USER}
+      POSTGRES_PASSWORD: ${JOPLIN_DB_PASS}
+      MAILER_ENABLED: 0
     volumes:
-      - ${DATA_ROOT}/${JOPLIN_CONFIG}:/home/joplin
+      - ${DATA_ROOT}/${BACKUPS}:/backup
+      - ${DATA_ROOT}/${JOPLIN_CONFIG}:/var/lib/joplin
     ports:
       - "${JOPLIN_PORT}:${JOPLIN_PORT}"
     restart: unless-stopped
@@ -319,12 +412,26 @@ services:
   # Recipe Management
   # -------------------
   tandoor:
-    image: vabene1111/recipes:latest
     container_name: tandoor
+    image: vabene1111/recipes:latest
+    depends_on:
+      database:
+        condition: service_healthy
     environment:
-      - TZ: ${TZ}
+      TZ: ${TZ}
+      POSTGRES_HOST: postgres://database:5432
+      POSTGRES_DB: djangodb
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${TANDOOR_DB_USER}
+      POSTGRES_PASSWORD: ${TANDOOR_DB_PASS}
+      SECRET_KEY: ${TANDOOR_SECRET_KEY}
+      ALLOWED_HOSTS: 127.0.0.1,localhost,192.168.2.10
+      CSRF_TRUSTED_ORIGINS: http://192.168.2.10,http://localhost,http://127.0.0.1,http://fubarmedia.servebeer.com
     volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${TANDOOR_CONFIG}:/shared
+      - ${DATA_ROOT}/${TANDOOR_CONFIG}/mediafiles:/opt/recipes/mediafiles
+      - ${DATA_ROOT}/${TANDOOR_CONFIG}/staticfiles:/opt/recipes/staticfiles
     ports:
       - "${TANDOOR_PORT}:80"
     restart: unless-stopped
@@ -333,20 +440,21 @@ services:
   # Media Cleanup
   # -------------------
   decluttarr:
-    image: ghcr.io/manimatter/decluttarr:v1.50.2
     container_name: decluttarr
+    image: ghcr.io/manimatter/decluttarr:v1.50.2
     environment:
-      - PUID: ${PUID}
-      - PGID: ${PGID}
-      - TZ: ${TZ}
-      - UMASK_SET: 022
-      - SONARR_URL: "http://sonarr:${SONARR_PORT}"
-      - SONARR_KEY: ${SONARR_API_KEY}
-      - RADARR_URL: "http://radarr:${RADARR_PORT}"
-      - RADARR_KEY: ${RADARR_API_KEY}
-      - LIDARR_URL: "http://lidarr:${LIDARR_PORT}"
-      - LIDARR_KEY: ${LIDARR_API_KEY}
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+      UMASK_SET: 022
+      SONARR_URL: "http://sonarr:${SONARR_PORT}"
+      SONARR_KEY: ${SONARR_API_KEY}
+      RADARR_URL: "http://radarr:${RADARR_PORT}"
+      RADARR_KEY: ${RADARR_API_KEY}
+      LIDARR_URL: "http://lidarr:${LIDARR_PORT}"
+      LIDARR_KEY: ${LIDARR_API_KEY}
     volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${DECLUTTARR_CONFIG}:/config
       - ${DATA_ROOT}/${DOWNLOADS}:/downloads
     ports:
@@ -357,8 +465,8 @@ services:
   # Cloudflare Tunnel (for external access)
   # -------------------
   cloudflared:
-    image: cloudflare/cloudflared:latest
     container_name: cloudflared
+    image: cloudflare/cloudflared:latest
     command: tunnel --no-autoupdate run --token ${CLOUDFARE_TOKEN}
     restart: unless-stopped
     
@@ -366,9 +474,9 @@ services:
     container_name: flaresolverr
     image: flaresolverr/flaresolverr:latest
     environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TZ}
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
     ports:
       - "${FLARESOLVERR_PORT}:${FLARESOLVERR_PORT}"
     restart: unless-stopped

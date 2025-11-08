@@ -153,18 +153,7 @@ docker-compose logs
 docker-compose logs radarr
 ```
 
-## 🔐 Security Notes
+## Postgres
 
-- Change default passwords for all services
-- Configure proper authentication
-- Use reverse proxy for external access
-- Keep services updated regularly
-- Monitor access logs
+docker exec -it postgres psql -U postgres -d postgres
 
-## 📞 Support
-
-For issues specific to this setup:
-1. Check the troubleshooting section
-2. Review Docker and service logs
-3. Verify network connectivity to PHOENIX server
-4. Ensure proper file permissions and ownership
