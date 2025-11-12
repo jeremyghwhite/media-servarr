@@ -18,6 +18,8 @@ services:
       - "${QBITTORRENT_WEB_PORT}:${QBITTORRENT_WEB_PORT}"
       - "6881:6881"
       - "6881:6881/udp"
+    networks:
+      - default
     restart: unless-stopped
     
   sabnzbd:
@@ -34,6 +36,8 @@ services:
     ports:
       - "${SABNZBD_WEB_PORT}:8080"
       - "9090:9090"
+    networks:
+      - default
     restart: unless-stopped
 
   # -------------------
@@ -51,6 +55,8 @@ services:
       - ${DATA_ROOT}/${PROWLARR_CONFIG}:/config
     ports:
       - "${PROWLARR_PORT}:${PROWLARR_PORT}"
+    networks:
+      - default
     restart: unless-stopped
 
   # -------------------
@@ -70,6 +76,8 @@ services:
       - ${DATA_ROOT}/${DOWNLOADS}:/data/downloads
     ports:
       - "${RADARR_PORT}:${RADARR_PORT}"
+    networks:
+      - default
     restart: unless-stopped
 
   # -------------------
@@ -90,6 +98,8 @@ services:
       - ${DATA_ROOT}/${DOWNLOADS}:/data/downloads
     ports:
       - "${SONARR_PORT}:${SONARR_PORT}"
+    networks:
+      - default
     restart: unless-stopped
 
   # -------------------
@@ -109,21 +119,26 @@ services:
       - ${DATA_ROOT}/${DOWNLOADS}:/data/downloads
     ports:
       - "${READARR_PORT}:${READARR_PORT}"
+    networks:
+      - default
     restart: unless-stopped
     
-  calibre-web:
-    container_name: calibre-web
+  calibre:
+    container_name: calibre
     image: linuxserver/calibre-web
     environment:
       PUID: ${PUID}
       PGID: ${PGID}
       TZ: ${TZ}
+      PORT: ${CALIBRE_PORT}
     volumes:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${CALIBRE_CONFIG}:/config
       - ${DATA_ROOT}/${MEDIA_BOOKS}:/data/books
     ports:
       - "${CALIBRE_PORT}:${CALIBRE_PORT}"
+    networks:
+      - default
     restart: unless-stopped
 
   # -------------------
@@ -143,6 +158,8 @@ services:
       - ${DATA_ROOT}/${DOWNLOADS}:/data/downloads
     ports:
       - "${LIDARR_PORT}:${LIDARR_PORT}"
+    networks:
+      - default
     restart: unless-stopped
 
   # -------------------
@@ -162,6 +179,8 @@ services:
       - ${DATA_ROOT}/${DOWNLOADS}:/data/downloads
     ports:
       - "${WHISPARR_PORT}:${WHISPARR_PORT}"
+    networks:
+      - default
     restart: unless-stopped
 
   # -------------------
@@ -181,15 +200,14 @@ services:
       - ${DATA_ROOT}/${MEDIA_MOVIES}:/data/movies
     ports:
       - "${BAZARR_PORT}:6767"
+    networks:
+      - default
     restart: unless-stopped
     
   subgenai:
     container_name: subgenai
     image: mccloud/subgen:cpu
     tty: true
-    depends_on:
-      bazarr:
-        condition: service_started
     environment:
       WEBHOOKPORT: ${SUBGEN_PORT}
       PLEXTOKEN: ${PLEX_TOKEN}
@@ -201,6 +219,11 @@ services:
        - ${DATA_ROOT}/${SUBGENAI_DATA}/subgen.env:/subgen/subgen.env:ro
     ports:
        - "${SUBGEN_PORT}:9000"
+    networks:
+      - default
+    depends_on:
+      bazarr:
+        condition: service_started
 
   # -------------------
   # Media Servers
@@ -223,6 +246,8 @@ services:
       - ${DATA_ROOT}/${MEDIA_PHOTOS}:/data/photos
     ports:
       - "${PLEX_PORT}:32400"
+    networks:
+      - default
     restart: unless-stopped
 
   jellyfin:
@@ -243,6 +268,8 @@ services:
       - ${DATA_ROOT}/${MEDIA_PHOTOS}:/data/photos
     ports:
       - "${JELLYFIN_PORT}:${JELLYFIN_PORT}"
+    networks:
+      - default
     restart: unless-stopped
 
   # -------------------
@@ -259,6 +286,8 @@ services:
       - ${DATA_ROOT}/${JELLYSEERR_CONFIG}:/app/config
     ports:
       - "${JELLYSEERR_PORT}:${JELLYSEERR_PORT}"
+    networks:
+      - default
     restart: unless-stopped
 
   # -------------------
@@ -267,14 +296,84 @@ services:
   vaultwarden:
     container_name: vaultwarden
     image: vaultwarden/server:latest
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:80 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    env_file: ${DATA_ROOT}/${VAULT_CONFIG}/vaultwarden.env
     environment:
       WEBSOCKET_ENABLED: "true"
+      DATABASE_URL: "postgres://${VAULT_DB_USER}:${VAULT_DB_PASS}@postgresdb:5432/vaultwarden"
+      # External URL configuration
+      DOMAIN: "https://vaultwarden.phoenix-server.cc"
+      # Tell Vaultwarden to always assume HTTPS when behind reverse proxy
+      FORCE_HTTPS: "true"
+      # Logging
+      EXTENDED_LOGGING: "true"
+      LOG_LEVEL: "info"
     volumes:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${VAULT_CONFIG}:/data
     ports:
       - "${VAULT_PORT}:80"
+    networks:
+      - default
     restart: unless-stopped
+    depends_on:
+      postgresdb:
+        condition: service_healthy
+
+  # -------------------
+  # Reverse Proxy
+  # -------------------
+  caddy:
+    container_name: caddy
+    image: caddy:2
+    env_file: .env
+    volumes:
+      - ${DATA_ROOT}/caddy/Caddyfile:/etc/caddy/Caddyfile
+      - ${DATA_ROOT}/${CADDY_DATA}:/data
+      - ${DATA_ROOT}/${CADDY_CONFIG}:/config
+      - ${DATA_ROOT}/caddy/logs/:/var/log/caddy/
+    ports:
+      - "443:443"
+      - "80:80"
+    networks:
+      - default
+    restart: unless-stopped
+    depends_on:
+      calibre:
+        condition: service_started
+      homeassistant:
+        condition: service_started
+      immich:
+        condition: service_healthy
+      jellyfin:
+        condition: service_started
+      jellyseerr:
+        condition: service_started
+      joplin:
+        condition: service_started
+      lidarr:
+        condition: service_started
+      qbittorrent:
+        condition: service_started
+      radarr:
+        condition: service_started
+      readarr:
+        condition: service_started
+      sabnzbd:
+        condition: service_started
+      sonarr:
+        condition: service_started
+      tandoor:
+        condition: service_started
+      vaultwarden:
+        condition: service_healthy
+      whisparr:
+        condition: service_started
 
   # -------------------
   # Photo Management
@@ -282,25 +381,27 @@ services:
   immich:
     container_name: immich
     image: ghcr.io/immich-app/immich-server:release
-    depends_on:
-      database:
-        condition: service_healthy
-      redis:
-        condition: service_started
     environment:
       TZ: ${TZ}
-      DB_URL: postgres://${IMMICH_DB_USER}:${IMMICH_DB_PASS}@database:5432/immich
+      DB_URL: postgres://${IMMICH_DB_USER}:${IMMICH_DB_PASS}@postgresdb:5432/immich
       IMMICH_LOG_LEVEL: log
       REDIS_HOSTNAME: redis
-    ports:
-      - "${IMMICH_PORT}:${IMMICH_PORT}"
     volumes:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${IMMICH_CONFIG}:/config
       - ${DATA_ROOT}/${MEDIA_PHOTOS}:/usr/src/app/upload
+    ports:
+      - "${IMMICH_PORT}:${IMMICH_PORT}"
+    networks:
+      - default
     restart: unless-stopped
+    depends_on:
+      postgresdb:
+        condition: service_healthy
+      redis:
+        condition: service_started
 
-  database:
+  postgresdb:
     container_name: postgres
     image: pgvector/pgvector:pg15
     environment:
@@ -312,6 +413,8 @@ services:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - /var/lib/postgres-data:/var/lib/postgresql/data
       - ./postgres-init:/docker-entrypoint-initdb.d
+    networks:
+      - default
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${IMMICH_DB_USER} -d immich"]
@@ -322,51 +425,27 @@ services:
   postgres-backup:
     image: postgres:15
     container_name: postgres-backup
-    depends_on:
-      - database
     environment:
-      POSTGRES_HOST: database
+      POSTGRES_HOST: postgresdb
       POSTGRES_PORT: 5432
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASS}
       TZ: America/Halifax
     volumes:
-      - /home/jeremy/media-servarr-app-data/server-backups:/backups
-    entrypoint: /bin/bash
-    command: >
-      /bin/bash -c "
-      set -e;
-      export PGPASSWORD=\"\${POSTGRES_PASSWORD}\";
-      DATE=\$(date +%Y-%m-%d_%H-%M);
-      echo '=== Starting PostgreSQL multi-database backup at' \$DATE '===';
-      
-      SQL=\"SELECT datname FROM pg_database WHERE datistemplate = false AND datname NOT IN ('postgres','template0','template1');\";
-      DBS=\$(psql -h \"\${POSTGRES_HOST}\" -U \"\${POSTGRES_USER}\" -p \"\${POSTGRES_PORT}\" -t -c \"\$SQL\");
-
-      for DB in \$DBS; do
-        DB=\$(echo \"\$DB\" | xargs);
-        echo '--- Backing up' \$DB '---';
-        DB_DIR=\"/backups/\$DB\";
-        mkdir -p \"\$DB_DIR\";
-        FILE=\"\$DB_DIR/\${DB}_\${DATE}.sql.gz\";
-        pg_dump -h \"\${POSTGRES_HOST}\" -U \"\${POSTGRES_USER}\" -p \"\${POSTGRES_PORT}\" \"\$DB\" | gzip > \"\$FILE\";
-        echo 'Backup complete:' \$FILE;
-
-        cd \"\$DB_DIR\";
-        ls -1t \${DB}_*.sql.gz | tail -n +4 | xargs -r rm --;
-        echo 'Old backups pruned for' \$DB;
-      done;
-
-      echo '=== All database backups finished ===';
-      "
-
-
-
+      - ${DATA_ROOT}/server-backups:/backups
+      - /home/jeremy/media-servarr/postgres-init/postgres-backup.sh:/usr/local/bin/backup.sh:ro
+    entrypoint: ["/bin/bash", "/usr/local/bin/backup.sh"]
+    networks:
+      - default
+    depends_on:
+      - postgresdb
     
   redis:
-    container_name: immich_redis
+    container_name: redis
     image: redis:7
     restart: unless-stopped
+    networks:
+      - default
 
   # -------------------
   # Home Automation
@@ -381,6 +460,8 @@ services:
       - ${DATA_ROOT}/${HOMEASSISTANT_CONFIG}:/config
     ports:
       - "${HOMEASSISTANT_PORT}:${HOMEASSISTANT_PORT}"
+    networks:
+      - default
     restart: unless-stopped
 
   # -------------------
@@ -389,13 +470,10 @@ services:
   joplin:
     container_name: joplin
     image: joplin/server:latest
-    depends_on:
-      database:
-        condition: service_healthy
     environment:
-      APP_BASE_URL: http://fubarmedia.servebeer.com
+      APP_BASE_URL: https://joplin.phoenix-server.cc
       APP_PORT: ${JOPLIN_PORT}
-      POSTGRES_HOST: database
+      POSTGRES_HOST: postgresdb
       POSTGRES_PORT: 5432
       POSTGRES_DATABASE: joplin
       POSTGRES_USER: ${JOPLIN_DB_USER}
@@ -406,7 +484,12 @@ services:
       - ${DATA_ROOT}/${JOPLIN_CONFIG}:/var/lib/joplin
     ports:
       - "${JOPLIN_PORT}:${JOPLIN_PORT}"
+    networks:
+      - default
     restart: unless-stopped
+    depends_on:
+      postgresdb:
+        condition: service_healthy
 
   # -------------------
   # Recipe Management
@@ -414,19 +497,16 @@ services:
   tandoor:
     container_name: tandoor
     image: vabene1111/recipes:latest
-    depends_on:
-      database:
-        condition: service_healthy
     environment:
       TZ: ${TZ}
-      POSTGRES_HOST: postgres://database:5432
+      POSTGRES_HOST: postgres://postgresdb:5432
       POSTGRES_DB: djangodb
       POSTGRES_PORT: 5432
       POSTGRES_USER: ${TANDOOR_DB_USER}
       POSTGRES_PASSWORD: ${TANDOOR_DB_PASS}
       SECRET_KEY: ${TANDOOR_SECRET_KEY}
-      ALLOWED_HOSTS: 127.0.0.1,localhost,192.168.2.10
-      CSRF_TRUSTED_ORIGINS: http://192.168.2.10,http://localhost,http://127.0.0.1,http://fubarmedia.servebeer.com
+      ALLOWED_HOSTS: 127.0.0.1,localhost,192.168.2.10,tandoor.phoenix-server.cc
+      CSRF_TRUSTED_ORIGINS: http://192.168.2.10,http://localhost,http://127.0.0.1,http://fubarmedia.servebeer.com,https://tandoor.phoenix-server.cc
     volumes:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${TANDOOR_CONFIG}:/shared
@@ -434,7 +514,12 @@ services:
       - ${DATA_ROOT}/${TANDOOR_CONFIG}/staticfiles:/opt/recipes/staticfiles
     ports:
       - "${TANDOOR_PORT}:80"
+    networks:
+      - default
     restart: unless-stopped
+    depends_on:
+      postgresdb:
+        condition: service_healthy
 
   # -------------------
   # Media Cleanup
@@ -459,6 +544,8 @@ services:
       - ${DATA_ROOT}/${DOWNLOADS}:/downloads
     ports:
       - "${DECLUTTARR_PORT}:${DECLUTTARR_PORT}"
+    networks:
+      - default
     restart: unless-stopped
 
   # -------------------
@@ -467,8 +554,16 @@ services:
   cloudflared:
     container_name: cloudflared
     image: cloudflare/cloudflared:latest
-    command: tunnel --no-autoupdate run --token ${CLOUDFARE_TOKEN}
+    command: tunnel --config /etc/cloudflared/config.yml run
     restart: unless-stopped
+    volumes:
+      - ${DATA_ROOT}/${CLOUDFLARED_CONFIG}/config.yml:/etc/cloudflared/config.yml:ro
+      - ${DATA_ROOT}/${CLOUDFLARED_CONFIG}/11841668-d562-40bb-b307-72c6eceb7eb1.json:/etc/cloudflared/11841668-d562-40bb-b307-72c6eceb7eb1.json:ro
+      - ${DATA_ROOT}/${CLOUDFLARED_CONFIG}/cert.pem:/etc/cloudflared/cert.pem:ro
+    networks:
+      - default
+    depends_on:
+      - caddy
     
   flaresolverr:
     container_name: flaresolverr
@@ -479,4 +574,10 @@ services:
       TZ: ${TZ}
     ports:
       - "${FLARESOLVERR_PORT}:${FLARESOLVERR_PORT}"
+    networks:
+      - default
     restart: unless-stopped
+    
+networks:
+  default:
+    driver: bridge
