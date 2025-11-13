@@ -1,191 +1,7 @@
 services:
-  # -------------------
-  # Download Clients
-  # -------------------
-  qbittorrent:
-    container_name: qbittorrent
-    image: linuxserver/qbittorrent:latest
-    environment:
-      PUID: ${PUID}
-      PGID: ${PGID}
-      TZ: ${TZ}
-      WEBUI_PORT: ${QBITTORRENT_WEB_PORT}
-    volumes:
-      - ${DATA_ROOT}/${BACKUPS}:/backup
-      - ${DATA_ROOT}/${QBITTORRENT_CONFIG}:/config
-      - ${DATA_ROOT}/${DOWNLOADS}:/data/downloads
-    ports:
-      - "${QBITTORRENT_WEB_PORT}:${QBITTORRENT_WEB_PORT}"
-      - "6881:6881"
-      - "6881:6881/udp"
-    networks:
-      - default
-    restart: unless-stopped
-    
-  sabnzbd:
-    container_name: sabnzbd
-    image: ghcr.io/hotio/sabnzbd:latest
-    environment:
-      PUID: ${PUID}
-      PGID: ${PGID}
-      TZ: "${TZ}"
-    volumes:
-      - ${DATA_ROOT}/${BACKUPS}:/backup
-      - ${DATA_ROOT}/${SABNZBD_CONFIG}:/config
-      - ${DATA_ROOT}/${DOWNLOADS}:/data/downloads
-    ports:
-      - "${SABNZBD_WEB_PORT}:8080"
-      - "9090:9090"
-    networks:
-      - default
-    restart: unless-stopped
-
-  # -------------------
-  # Indexer
-  # -------------------
-  prowlarr:
-    container_name: prowlarr
-    image: linuxserver/prowlarr:latest
-    environment:
-      PUID: ${PUID}
-      PGID: ${PGID}
-      TZ: ${TZ}
-    volumes:
-      - ${DATA_ROOT}/${BACKUPS}:/backup
-      - ${DATA_ROOT}/${PROWLARR_CONFIG}:/config
-    ports:
-      - "${PROWLARR_PORT}:${PROWLARR_PORT}"
-    networks:
-      - default
-    restart: unless-stopped
-
-  # -------------------
-  # Movies
-  # -------------------
-  radarr:
-    container_name: radarr
-    image: linuxserver/radarr:develop
-    environment:
-      PUID: ${PUID}
-      PGID: ${PGID}
-      TZ: ${TZ}
-    volumes:
-      - ${DATA_ROOT}/${BACKUPS}:/backup
-      - ${DATA_ROOT}/${RADARR_CONFIG}:/config
-      - ${DATA_ROOT}/${MEDIA_MOVIES}:/data/movies
-      - ${DATA_ROOT}/${DOWNLOADS}:/data/downloads
-    ports:
-      - "${RADARR_PORT}:${RADARR_PORT}"
-    networks:
-      - default
-    restart: unless-stopped
-
-  # -------------------
-  # TV Shows
-  # -------------------
-  sonarr:
-    container_name: sonarr
-    image: linuxserver/sonarr:develop
-    environment:
-      PUID: ${PUID}
-      PGID: ${PGID}
-      TZ: ${TZ}
-    volumes:
-      - ${DATA_ROOT}/${BACKUPS}:/backup
-      - ${DATA_ROOT}/${SONARR_CONFIG}:/config
-      - ${DATA_ROOT}/${MEDIA_TV}:/data/tv:rw
-      - ${DATA_ROOT}/${MEDIA_TV_HOWARD_STERN}:/data/howard-stern:rw
-      - ${DATA_ROOT}/${DOWNLOADS}:/data/downloads
-    ports:
-      - "${SONARR_PORT}:${SONARR_PORT}"
-    networks:
-      - default
-    restart: unless-stopped
-
-  # -------------------
-  # Books
-  # -------------------
-  readarr:
-    container_name: readarr
-    image: ghcr.io/hotio/readarr:latest
-    environment:
-      PUID: ${PUID}
-      PGID: ${PGID}
-      TZ: ${TZ}
-    volumes:
-      - ${DATA_ROOT}/${BACKUPS}:/backup
-      - ${DATA_ROOT}/${READARR_CONFIG}:/config
-      - ${DATA_ROOT}/${MEDIA_BOOKS}:/data/books
-      - ${DATA_ROOT}/${DOWNLOADS}:/data/downloads
-    ports:
-      - "${READARR_PORT}:${READARR_PORT}"
-    networks:
-      - default
-    restart: unless-stopped
-    
-  calibre:
-    container_name: calibre
-    image: linuxserver/calibre-web
-    environment:
-      PUID: ${PUID}
-      PGID: ${PGID}
-      TZ: ${TZ}
-      PORT: ${CALIBRE_PORT}
-    volumes:
-      - ${DATA_ROOT}/${BACKUPS}:/backup
-      - ${DATA_ROOT}/${CALIBRE_CONFIG}:/config
-      - ${DATA_ROOT}/${MEDIA_BOOKS}:/data/books
-    ports:
-      - "${CALIBRE_PORT}:${CALIBRE_PORT}"
-    networks:
-      - default
-    restart: unless-stopped
-
-  # -------------------
-  # Music
-  # -------------------
-  lidarr:
-    container_name: lidarr
-    image: linuxserver/lidarr:develop
-    environment:
-      PUID: ${PUID}
-      PGID: ${PGID}
-      TZ: ${TZ}
-    volumes:
-      - ${DATA_ROOT}/${BACKUPS}:/backup
-      - ${DATA_ROOT}/${LIDARR_CONFIG}:/config
-      - ${DATA_ROOT}/${MEDIA_MUSIC}:/data/music
-      - ${DATA_ROOT}/${DOWNLOADS}:/data/downloads
-    ports:
-      - "${LIDARR_PORT}:${LIDARR_PORT}"
-    networks:
-      - default
-    restart: unless-stopped
-
-  # -------------------
-  # Adult Media
-  # -------------------
-  whisparr:
-    container_name: whisparr
-    image: ghcr.io/hotio/whisparr:latest
-    environment:
-      PUID: ${PUID}
-      PGID: ${PGID}
-      TZ: ${TZ}
-    volumes:
-      - ${DATA_ROOT}/${BACKUPS}:/backup
-      - ${DATA_ROOT}/${WHISPARR_CONFIG}:/config
-      - ${DATA_ROOT}/${MEDIA_ADULT}:/data/adult
-      - ${DATA_ROOT}/${DOWNLOADS}:/data/downloads
-    ports:
-      - "${WHISPARR_PORT}:${WHISPARR_PORT}"
-    networks:
-      - default
-    restart: unless-stopped
-
-  # -------------------
-  # Subtitles
-  # -------------------
+  # -----------------------------------
+  # BAZARR - Subtitles
+  # -----------------------------------
   bazarr:
     container_name: bazarr
     image: ghcr.io/hotio/bazarr:latest
@@ -203,131 +19,10 @@ services:
     networks:
       - default
     restart: unless-stopped
-    
-  subgenai:
-    container_name: subgenai
-    image: mccloud/subgen:cpu
-    tty: true
-    environment:
-      WEBHOOKPORT: ${SUBGEN_PORT}
-      PLEXTOKEN: ${PLEX_TOKEN}
-      PLEXSERVER: http://plex:${PLEX_PORT}
-    volumes:
-       - ${DATA_ROOT}/${MEDIA_TV}:/data/tv
-       - ${DATA_ROOT}/${MEDIA_MOVIES}:/data/movies
-       - ${DATA_ROOT}/${SUBGENAI_DATA}/models:/subgen/models
-       - ${DATA_ROOT}/${SUBGENAI_DATA}/subgen.env:/subgen/subgen.env:ro
-    ports:
-       - "${SUBGEN_PORT}:9000"
-    networks:
-      - default
-    depends_on:
-      bazarr:
-        condition: service_started
 
-  # -------------------
-  # Media Servers
-  # -------------------
-  plex:
-    container_name: plex
-    image: linuxserver/plex
-    environment:
-      PUID: ${PUID}
-      PGID: ${PGID}
-      TZ: ${TZ}
-      VERSION: latest
-    volumes:
-      - ${DATA_ROOT}/${BACKUPS}:/backup
-      - ${DATA_ROOT}/${PLEX_CONFIG}:/config
-      - ${DATA_ROOT}/${MEDIA_TV}:/data/tv
-      - ${DATA_ROOT}/${MEDIA_TV_HOWARD_STERN}:/data/howard-stern
-      - ${DATA_ROOT}/${MEDIA_MOVIES}:/data/movies
-      - ${DATA_ROOT}/${MEDIA_MUSIC}:/data/music
-      - ${DATA_ROOT}/${MEDIA_PHOTOS}:/data/photos
-    ports:
-      - "${PLEX_PORT}:32400"
-    networks:
-      - default
-    restart: unless-stopped
-
-  jellyfin:
-    container_name: jellyfin
-    image: jellyfin/jellyfin:latest
-    environment:
-      PUID: ${PUID}
-      PGID: ${PGID}
-      TZ: ${TZ}
-    volumes:
-      - ${DATA_ROOT}/${BACKUPS}:/backup
-      - ${DATA_ROOT}/${JELLYFIN_CONFIG}:/config
-      - ${DATA_ROOT}/${JELLYFIN_CACHE}:/cache
-      - ${DATA_ROOT}/${MEDIA_MOVIES}:/data/movies
-      - ${DATA_ROOT}/${MEDIA_TV}:/data/tv
-      - ${DATA_ROOT}/${MEDIA_TV_HOWARD_STERN}:/data/howard-stern
-      - ${DATA_ROOT}/${MEDIA_MUSIC}:/data/music
-      - ${DATA_ROOT}/${MEDIA_PHOTOS}:/data/photos
-    ports:
-      - "${JELLYFIN_PORT}:${JELLYFIN_PORT}"
-    networks:
-      - default
-    restart: unless-stopped
-
-  # -------------------
-  # Request Management
-  # -------------------
-  jellyseerr:
-    container_name: jellyseerr
-    image: fallenbagel/jellyseerr:latest
-    environment:
-      LOG_LEVEL: debug
-      TZ: ${TZ}
-    volumes:
-      - ${DATA_ROOT}/${BACKUPS}:/backup
-      - ${DATA_ROOT}/${JELLYSEERR_CONFIG}:/app/config
-    ports:
-      - "${JELLYSEERR_PORT}:${JELLYSEERR_PORT}"
-    networks:
-      - default
-    restart: unless-stopped
-
-  # -------------------
-  # Password Manager
-  # -------------------
-  vaultwarden:
-    container_name: vaultwarden
-    image: vaultwarden/server:latest
-    healthcheck:
-      test: ["CMD-SHELL", "curl -fs http://localhost:80 || exit 1"]
-      interval: 15s
-      timeout: 5s
-      retries: 10
-      start_period: 30s
-    env_file: ${DATA_ROOT}/${VAULT_CONFIG}/vaultwarden.env
-    environment:
-      WEBSOCKET_ENABLED: "true"
-      DATABASE_URL: "postgres://${VAULT_DB_USER}:${VAULT_DB_PASS}@postgresdb:5432/vaultwarden"
-      # External URL configuration
-      DOMAIN: "https://vaultwarden.phoenix-server.cc"
-      # Tell Vaultwarden to always assume HTTPS when behind reverse proxy
-      FORCE_HTTPS: "true"
-      # Logging
-      EXTENDED_LOGGING: "true"
-      LOG_LEVEL: "info"
-    volumes:
-      - ${DATA_ROOT}/${BACKUPS}:/backup
-      - ${DATA_ROOT}/${VAULT_CONFIG}:/data
-    ports:
-      - "${VAULT_PORT}:80"
-    networks:
-      - default
-    restart: unless-stopped
-    depends_on:
-      postgresdb:
-        condition: service_healthy
-
-  # -------------------
-  # Reverse Proxy
-  # -------------------
+  # -----------------------------------
+  # CADDY - Reverse Proxy
+  # -----------------------------------
   caddy:
     container_name: caddy
     image: caddy:2
@@ -375,9 +70,104 @@ services:
       whisparr:
         condition: service_started
 
-  # -------------------
-  # Photo Management
-  # -------------------
+  # -----------------------------------
+  # CALIBRE - E-Book Reader
+  # -----------------------------------
+  calibre:
+    container_name: calibre
+    image: linuxserver/calibre-web
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+      PORT: ${CALIBRE_PORT}
+    volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
+      - ${DATA_ROOT}/${CALIBRE_CONFIG}:/config
+      - ${DATA_ROOT}/${MEDIA_BOOKS}:/data/books
+    ports:
+      - "${CALIBRE_PORT}:${CALIBRE_PORT}"
+    networks:
+      - default
+    restart: unless-stopped
+
+  # -----------------------------------
+  # CLOUDFLARED - Cloudflare Tunnel (for external access)
+  # -----------------------------------
+  cloudflared:
+    container_name: cloudflared
+    image: cloudflare/cloudflared:latest
+    command: tunnel --config /etc/cloudflared/config.yml run
+    restart: unless-stopped
+    volumes:
+      - ${DATA_ROOT}/${CLOUDFLARED_CONFIG}/config.yml:/etc/cloudflared/config.yml:ro
+      - ${DATA_ROOT}/${CLOUDFLARED_CONFIG}/11841668-d562-40bb-b307-72c6eceb7eb1.json:/etc/cloudflared/11841668-d562-40bb-b307-72c6eceb7eb1.json:ro
+      - ${DATA_ROOT}/${CLOUDFLARED_CONFIG}/cert.pem:/etc/cloudflared/cert.pem:ro
+    networks:
+      - default
+    depends_on:
+      - caddy
+    
+  flaresolverr:
+    container_name: flaresolverr
+    image: flaresolverr/flaresolverr:latest
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+    ports:
+      - "${FLARESOLVERR_PORT}:${FLARESOLVERR_PORT}"
+    networks:
+      - default
+    restart: unless-stopped
+
+  # -----------------------------------
+  # DECLUTTARR - Media Cleanup
+  # -----------------------------------
+  decluttarr:
+    container_name: decluttarr
+    image: ghcr.io/manimatter/decluttarr:v1.50.2
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+      UMASK_SET: 022
+      SONARR_URL: "http://sonarr:${SONARR_PORT}"
+      SONARR_KEY: ${SONARR_API_KEY}
+      RADARR_URL: "http://radarr:${RADARR_PORT}"
+      RADARR_KEY: ${RADARR_API_KEY}
+      LIDARR_URL: "http://lidarr:${LIDARR_PORT}"
+      LIDARR_KEY: ${LIDARR_API_KEY}
+    volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
+      - ${DATA_ROOT}/${DECLUTTARR_CONFIG}:/config
+      - ${DATA_ROOT}/${DOWNLOADS}:/downloads
+    ports:
+      - "${DECLUTTARR_PORT}:${DECLUTTARR_PORT}"
+    networks:
+      - default
+    restart: unless-stopped
+
+  # -----------------------------------
+  # HOMEASSISTANT - Home Automation
+  # -----------------------------------
+  homeassistant:
+    container_name: homeassistant
+    image: ghcr.io/home-assistant/home-assistant:stable
+    environment:
+      TZ: ${TZ}
+    volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
+      - ${DATA_ROOT}/${HOMEASSISTANT_CONFIG}:/config
+    ports:
+      - "${HOMEASSISTANT_PORT}:${HOMEASSISTANT_PORT}"
+    networks:
+      - default
+    restart: unless-stopped
+
+  # -----------------------------------
+  # IMMICH - Photo Management
+  # -----------------------------------
   immich:
     container_name: immich
     image: ghcr.io/immich-app/immich-server:release
@@ -401,6 +191,125 @@ services:
       redis:
         condition: service_started
 
+  # -----------------------------------
+  # JELLYFIN - Media Server
+  # -----------------------------------
+  jellyfin:
+    container_name: jellyfin
+    image: jellyfin/jellyfin:latest
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+    volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
+      - ${DATA_ROOT}/${JELLYFIN_CONFIG}:/config
+      - ${DATA_ROOT}/${JELLYFIN_CACHE}:/cache
+      - ${DATA_ROOT}/${MEDIA_MOVIES}:/data/movies
+      - ${DATA_ROOT}/${MEDIA_TV}:/data/tv
+      - ${DATA_ROOT}/${MEDIA_TV_HOWARD_STERN}:/data/howard-stern
+      - ${DATA_ROOT}/${MEDIA_MUSIC}:/data/music
+      - ${DATA_ROOT}/${MEDIA_PHOTOS}:/data/photos
+    ports:
+      - "${JELLYFIN_PORT}:${JELLYFIN_PORT}"
+    networks:
+      - default
+    restart: unless-stopped
+
+  # -----------------------------------
+  # JELLYSEERR - Request Management
+  # -----------------------------------
+  jellyseerr:
+    container_name: jellyseerr
+    image: fallenbagel/jellyseerr:latest
+    environment:
+      LOG_LEVEL: debug
+      TZ: ${TZ}
+    volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
+      - ${DATA_ROOT}/${JELLYSEERR_CONFIG}:/app/config
+    ports:
+      - "${JELLYSEERR_PORT}:${JELLYSEERR_PORT}"
+    networks:
+      - default
+    restart: unless-stopped
+
+  # -----------------------------------
+  # JOPLIN - Note Taking
+  # -----------------------------------
+  joplin:
+    container_name: joplin
+    image: joplin/server:latest
+    environment:
+      APP_BASE_URL: https://joplin.phoenix-server.cc
+      APP_PORT: ${JOPLIN_PORT}
+      POSTGRES_HOST: postgresdb
+      POSTGRES_PORT: 5432
+      POSTGRES_DATABASE: joplin
+      POSTGRES_USER: ${JOPLIN_DB_USER}
+      POSTGRES_PASSWORD: ${JOPLIN_DB_PASS}
+      MAILER_ENABLED: 0
+    volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
+      - ${DATA_ROOT}/${JOPLIN_CONFIG}:/var/lib/joplin
+    ports:
+      - "${JOPLIN_PORT}:${JOPLIN_PORT}"
+    networks:
+      - default
+    restart: unless-stopped
+    depends_on:
+      postgresdb:
+        condition: service_healthy
+
+  # -----------------------------------
+  # LIDARR - Music
+  # -----------------------------------
+  lidarr:
+    container_name: lidarr
+    image: linuxserver/lidarr:develop
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+    volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
+      - ${DATA_ROOT}/${LIDARR_CONFIG}:/config
+      - ${DATA_ROOT}/${MEDIA_MUSIC}:/data/music
+      - ${DATA_ROOT}/${DOWNLOADS}:/data/downloads
+    ports:
+      - "${LIDARR_PORT}:${LIDARR_PORT}"
+    networks:
+      - default
+    restart: unless-stopped
+
+  # -----------------------------------
+  # PLEX - Media Server
+  # -----------------------------------
+  plex:
+    container_name: plex
+    image: linuxserver/plex
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+      VERSION: latest
+    volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
+      - ${DATA_ROOT}/${PLEX_CONFIG}:/config
+      - ${DATA_ROOT}/${MEDIA_TV}:/data/tv
+      - ${DATA_ROOT}/${MEDIA_TV_HOWARD_STERN}:/data/howard-stern
+      - ${DATA_ROOT}/${MEDIA_MOVIES}:/data/movies
+      - ${DATA_ROOT}/${MEDIA_MUSIC}:/data/music
+      - ${DATA_ROOT}/${MEDIA_PHOTOS}:/data/photos
+    ports:
+      - "${PLEX_PORT}:32400"
+    networks:
+      - default
+    restart: unless-stopped
+
+  # -----------------------------------
+  # POSTGRES - Database
+  # -----------------------------------
   postgresdb:
     container_name: postgres
     image: pgvector/pgvector:pg15
@@ -440,6 +349,105 @@ services:
     depends_on:
       - postgresdb
     
+  # -----------------------------------
+  # PROWLARR - Indexer
+  # -----------------------------------
+  prowlarr:
+    container_name: prowlarr
+    image: linuxserver/prowlarr:latest
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+    volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
+      - ${DATA_ROOT}/${PROWLARR_CONFIG}:/config
+    ports:
+      - "${PROWLARR_PORT}:${PROWLARR_PORT}"
+    networks:
+      - default
+    restart: unless-stopped
+    
+  # -----------------------------------
+  # QBITTORRENT - Torrent Download Client
+  # -----------------------------------
+  qbittorrent:
+    container_name: qbittorrent
+    image: linuxserver/qbittorrent:latest
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+      WEBUI_PORT: ${QBITTORRENT_WEB_PORT}
+    volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
+      - ${DATA_ROOT}/${QBITTORRENT_CONFIG}:/config
+      - ${DATA_ROOT}/${DOWNLOADS}:/data/downloads
+    ports:
+      - "${QBITTORRENT_WEB_PORT}:${QBITTORRENT_WEB_PORT}"
+      - "6881:6881"
+      - "6881:6881/udp"
+    networks:
+      - default
+    restart: unless-stopped
+
+  # -----------------------------------
+  # RADARR - Movies
+  # -----------------------------------
+  radarr:
+    container_name: radarr
+    image: linuxserver/radarr:develop
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+      RADARR__POSTGRES_HOST: postgres
+      RADARR__POSTGRES_PORT: 5432
+      RADARR__POSTGRES_USER: ${RADARR_DB_USER}
+      RADARR__POSTGRES_PASSWORD: ${RADARR_DB_PASS}
+      RADARR__POSTGRES_MAINDB: radarr
+    volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
+      - ${DATA_ROOT}/${RADARR_CONFIG}:/config
+      - ${DATA_ROOT}/${MEDIA_MOVIES}:/data/movies
+      - ${DATA_ROOT}/${DOWNLOADS}:/data/downloads
+    ports:
+      - "${RADARR_PORT}:${RADARR_PORT}"
+    networks:
+      - default
+    restart: unless-stopped
+    depends_on:
+      postgresdb:
+        condition: service_healthy
+      prowlarr:
+        condition: service_started
+      qbittorrent:
+        condition: service_started
+
+  # -----------------------------------
+  # READARR - Books
+  # -----------------------------------
+  readarr:
+    container_name: readarr
+    image: ghcr.io/hotio/readarr:latest
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+    volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
+      - ${DATA_ROOT}/${READARR_CONFIG}:/config
+      - ${DATA_ROOT}/${MEDIA_BOOKS}:/data/books
+      - ${DATA_ROOT}/${DOWNLOADS}:/data/downloads
+    ports:
+      - "${READARR_PORT}:${READARR_PORT}"
+    networks:
+      - default
+    restart: unless-stopped
+
+  # -----------------------------------
+  # REDIS - Cache Server
+  # -----------------------------------
   redis:
     container_name: redis
     image: redis:7
@@ -447,53 +455,76 @@ services:
     networks:
       - default
 
-  # -------------------
-  # Home Automation
-  # -------------------
-  homeassistant:
-    container_name: homeassistant
-    image: ghcr.io/home-assistant/home-assistant:stable
+  # -----------------------------------
+  # SABNZBD - Usenet Download Client
+  # -----------------------------------
+  sabnzbd:
+    container_name: sabnzbd
+    image: ghcr.io/hotio/sabnzbd:latest
     environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: "${TZ}"
+    volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
+      - ${DATA_ROOT}/${SABNZBD_CONFIG}:/config
+      - ${DATA_ROOT}/${DOWNLOADS}:/data/downloads
+    ports:
+      - "${SABNZBD_WEB_PORT}:8080"
+      - "9090:9090"
+    networks:
+      - default
+    restart: unless-stopped
+
+  # -----------------------------------
+  # SONARR - TV Shows
+  # -----------------------------------
+  sonarr:
+    container_name: sonarr
+    image: linuxserver/sonarr:develop
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
       TZ: ${TZ}
     volumes:
       - ${DATA_ROOT}/${BACKUPS}:/backup
-      - ${DATA_ROOT}/${HOMEASSISTANT_CONFIG}:/config
+      - ${DATA_ROOT}/${SONARR_CONFIG}:/config
+      - ${DATA_ROOT}/${MEDIA_TV}:/data/tv:rw
+      - ${DATA_ROOT}/${MEDIA_TV_HOWARD_STERN}:/data/howard-stern:rw
+      - ${DATA_ROOT}/${DOWNLOADS}:/data/downloads
     ports:
-      - "${HOMEASSISTANT_PORT}:${HOMEASSISTANT_PORT}"
+      - "${SONARR_PORT}:${SONARR_PORT}"
     networks:
       - default
     restart: unless-stopped
 
-  # -------------------
-  # Note Taking
-  # -------------------
-  joplin:
-    container_name: joplin
-    image: joplin/server:latest
+  # -----------------------------------
+  # SUBGENAI - AI Subtitle Generator
+  # -----------------------------------
+  subgenai:
+    container_name: subgenai
+    image: mccloud/subgen:cpu
+    tty: true
     environment:
-      APP_BASE_URL: https://joplin.phoenix-server.cc
-      APP_PORT: ${JOPLIN_PORT}
-      POSTGRES_HOST: postgresdb
-      POSTGRES_PORT: 5432
-      POSTGRES_DATABASE: joplin
-      POSTGRES_USER: ${JOPLIN_DB_USER}
-      POSTGRES_PASSWORD: ${JOPLIN_DB_PASS}
-      MAILER_ENABLED: 0
+      WEBHOOKPORT: ${SUBGEN_PORT}
+      PLEXTOKEN: ${PLEX_TOKEN}
+      PLEXSERVER: http://plex:${PLEX_PORT}
     volumes:
-      - ${DATA_ROOT}/${BACKUPS}:/backup
-      - ${DATA_ROOT}/${JOPLIN_CONFIG}:/var/lib/joplin
+       - ${DATA_ROOT}/${MEDIA_TV}:/data/tv
+       - ${DATA_ROOT}/${MEDIA_MOVIES}:/data/movies
+       - ${DATA_ROOT}/${SUBGENAI_DATA}/models:/subgen/models
+       - ${DATA_ROOT}/${SUBGENAI_DATA}/subgen.env:/subgen/subgen.env:ro
     ports:
-      - "${JOPLIN_PORT}:${JOPLIN_PORT}"
+       - "${SUBGEN_PORT}:9000"
     networks:
       - default
-    restart: unless-stopped
     depends_on:
-      postgresdb:
-        condition: service_healthy
+      bazarr:
+        condition: service_started
 
-  # -------------------
-  # Recipe Management
-  # -------------------
+  # -----------------------------------
+  # TANDOOR - Recipe Management
+  # -----------------------------------
   tandoor:
     container_name: tandoor
     image: vabene1111/recipes:latest
@@ -521,63 +552,65 @@ services:
       postgresdb:
         condition: service_healthy
 
-  # -------------------
-  # Media Cleanup
-  # -------------------
-  decluttarr:
-    container_name: decluttarr
-    image: ghcr.io/manimatter/decluttarr:v1.50.2
+  # -----------------------------------
+  # VAULTWARDEN - Password Manager
+  # -----------------------------------
+  vaultwarden:
+    container_name: vaultwarden
+    image: vaultwarden/server:latest
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:80 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    env_file: ${DATA_ROOT}/${VAULT_CONFIG}/vaultwarden.env
+    environment:
+      WEBSOCKET_ENABLED: "true"
+      DATABASE_URL: "postgres://${VAULT_DB_USER}:${VAULT_DB_PASS}@postgresdb:5432/vaultwarden"
+      # External URL configuration
+      DOMAIN: "https://vaultwarden.phoenix-server.cc"
+      # Tell Vaultwarden to always assume HTTPS when behind reverse proxy
+      FORCE_HTTPS: "true"
+      # Logging
+      EXTENDED_LOGGING: "true"
+      LOG_LEVEL: "info"
+    volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
+      - ${DATA_ROOT}/${VAULT_CONFIG}:/data
+    ports:
+      - "${VAULT_PORT}:80"
+    networks:
+      - default
+    restart: unless-stopped
+    depends_on:
+      postgresdb:
+        condition: service_healthy
+
+  # -----------------------------------
+  # Adult Media
+  # -----------------------------------
+  whisparr:
+    container_name: whisparr
+    image: ghcr.io/hotio/whisparr:latest
     environment:
       PUID: ${PUID}
       PGID: ${PGID}
       TZ: ${TZ}
-      UMASK_SET: 022
-      SONARR_URL: "http://sonarr:${SONARR_PORT}"
-      SONARR_KEY: ${SONARR_API_KEY}
-      RADARR_URL: "http://radarr:${RADARR_PORT}"
-      RADARR_KEY: ${RADARR_API_KEY}
-      LIDARR_URL: "http://lidarr:${LIDARR_PORT}"
-      LIDARR_KEY: ${LIDARR_API_KEY}
     volumes:
       - ${DATA_ROOT}/${BACKUPS}:/backup
-      - ${DATA_ROOT}/${DECLUTTARR_CONFIG}:/config
-      - ${DATA_ROOT}/${DOWNLOADS}:/downloads
+      - ${DATA_ROOT}/${WHISPARR_CONFIG}:/config
+      - ${DATA_ROOT}/${MEDIA_ADULT}:/data/adult
+      - ${DATA_ROOT}/${DOWNLOADS}:/data/downloads
     ports:
-      - "${DECLUTTARR_PORT}:${DECLUTTARR_PORT}"
+      - "${WHISPARR_PORT}:${WHISPARR_PORT}"
     networks:
       - default
     restart: unless-stopped
 
-  # -------------------
-  # Cloudflare Tunnel (for external access)
-  # -------------------
-  cloudflared:
-    container_name: cloudflared
-    image: cloudflare/cloudflared:latest
-    command: tunnel --config /etc/cloudflared/config.yml run
-    restart: unless-stopped
-    volumes:
-      - ${DATA_ROOT}/${CLOUDFLARED_CONFIG}/config.yml:/etc/cloudflared/config.yml:ro
-      - ${DATA_ROOT}/${CLOUDFLARED_CONFIG}/11841668-d562-40bb-b307-72c6eceb7eb1.json:/etc/cloudflared/11841668-d562-40bb-b307-72c6eceb7eb1.json:ro
-      - ${DATA_ROOT}/${CLOUDFLARED_CONFIG}/cert.pem:/etc/cloudflared/cert.pem:ro
-    networks:
-      - default
-    depends_on:
-      - caddy
-    
-  flaresolverr:
-    container_name: flaresolverr
-    image: flaresolverr/flaresolverr:latest
-    environment:
-      PUID: ${PUID}
-      PGID: ${PGID}
-      TZ: ${TZ}
-    ports:
-      - "${FLARESOLVERR_PORT}:${FLARESOLVERR_PORT}"
-    networks:
-      - default
-    restart: unless-stopped
-    
+  # -----------------------------------
+  # NETWORK
+  # ----------------------------------- 
 networks:
   default:
     driver: bridge
