@@ -488,20 +488,6 @@ services:
       - default
     restart: unless-stopped
 
-  # -----------------------------------
-  # SEERR - Request Management
-  # -----------------------------------
-  seerr:
-    image: ghcr.io/sct/overseerr
-    container_name: seerr
-    ports:
-      - "5056:5055"
-    volumes:
-      - ${DATA_ROOT}/${BACKUPS}:/backup
-      - ${DATA_ROOT}/${SEERR_CONFIG}:/app/config
-    networks:
-      - default
-    restart: unless-stopped
 
   # -----------------------------------
   # SONARR - TV Shows
