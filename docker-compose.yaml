@@ -12,8 +12,7 @@ services:
     volumes:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${BAZARR_CONFIG}:/config
-      - ${DATA_ROOT}/${MEDIA_TV}:/data/tv
-      - ${DATA_ROOT}/${MEDIA_MOVIES}:/data/movies
+      - ${DATA_ROOT}/${DATA}:/data
     ports:
       - "${BAZARR_PORT}:6767"
     networks:
@@ -64,6 +63,8 @@ services:
       sonarr:
         condition: service_started
       tandoor:
+        condition: service_started
+      tautulli:
         condition: service_started
       vaultwarden:
         condition: service_healthy
@@ -141,7 +142,7 @@ services:
     volumes:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${DECLUTTARR_CONFIG}:/config
-      - ${DATA_ROOT}/${DOWNLOADS}:/downloads
+      - ${DATA_ROOT}/${DATA}:/data
     ports:
       - "${DECLUTTARR_PORT}:${DECLUTTARR_PORT}"
     networks:
@@ -173,20 +174,20 @@ services:
     image: ghcr.io/immich-app/immich-server:release
     environment:
       TZ: ${TZ}
-      DB_URL: postgres://${IMMICH_DB_USER}:${IMMICH_DB_PASS}@postgresdb:5432/immich
+      DB_URL: postgres://${IMMICH_DB_USER}:${IMMICH_DB_PASS}@postgres:5432/immich
       IMMICH_LOG_LEVEL: log
       REDIS_HOSTNAME: redis
     volumes:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${IMMICH_CONFIG}:/config
-      - ${DATA_ROOT}/${MEDIA_PHOTOS}:/usr/src/app/upload
+      - ${DATA_ROOT}/${IMMICH_DATA}:/data
     ports:
       - "${IMMICH_PORT}:${IMMICH_PORT}"
     networks:
       - default
     restart: unless-stopped
     depends_on:
-      postgresdb:
+      postgres:
         condition: service_healthy
       redis:
         condition: service_started
@@ -205,11 +206,7 @@ services:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${JELLYFIN_CONFIG}:/config
       - ${DATA_ROOT}/${JELLYFIN_CACHE}:/cache
-      - ${DATA_ROOT}/${MEDIA_MOVIES}:/data/movies
-      - ${DATA_ROOT}/${MEDIA_TV}:/data/tv
-      - ${DATA_ROOT}/${MEDIA_TV_HOWARD_STERN}:/data/howard-stern
-      - ${DATA_ROOT}/${MEDIA_MUSIC}:/data/music
-      - ${DATA_ROOT}/${MEDIA_PHOTOS}:/data/photos
+      - ${DATA_ROOT}/${DATA_MEDIA}:/data/media
     ports:
       - "${JELLYFIN_PORT}:${JELLYFIN_PORT}"
     networks:
@@ -225,6 +222,12 @@ services:
     environment:
       LOG_LEVEL: debug
       TZ: ${TZ}
+      DB_TYPE: postgres
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: jellyseerr
+      DB_USER: ${JELLYSEERR_DB_USER}
+      DB_PASS: ${JELLYSEERR_DB_PASS}
     volumes:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${JELLYSEERR_CONFIG}:/app/config
@@ -243,7 +246,7 @@ services:
     environment:
       APP_BASE_URL: https://joplin.phoenix-server.cc
       APP_PORT: ${JOPLIN_PORT}
-      POSTGRES_HOST: postgresdb
+      POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
       POSTGRES_DATABASE: joplin
       POSTGRES_USER: ${JOPLIN_DB_USER}
@@ -258,7 +261,7 @@ services:
       - default
     restart: unless-stopped
     depends_on:
-      postgresdb:
+      postgres:
         condition: service_healthy
 
   # -----------------------------------
@@ -274,13 +277,26 @@ services:
     volumes:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${LIDARR_CONFIG}:/config
-      - ${DATA_ROOT}/${MEDIA_MUSIC}:/data/music
-      - ${DATA_ROOT}/${DOWNLOADS}:/data/downloads
+      - ${DATA_ROOT}/${DATA}:/data
     ports:
       - "${LIDARR_PORT}:${LIDARR_PORT}"
     networks:
       - default
     restart: unless-stopped
+
+  # -----------------------------------
+  # PGLOADER - Database Migration
+  # -----------------------------------
+  pgloader:
+    image: dimitri/pgloader:latest
+    container_name: pgloader
+    profiles: ["manual"]
+    networks:
+      - default
+    volumes:
+      - /home/jeremy/media-servarr-app-data/server-backups:/data:ro
+    entrypoint: ["tail", "-f", "/dev/null"]
+
 
   # -----------------------------------
   # PLEX - Media Server
@@ -296,11 +312,7 @@ services:
     volumes:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${PLEX_CONFIG}:/config
-      - ${DATA_ROOT}/${MEDIA_TV}:/data/tv
-      - ${DATA_ROOT}/${MEDIA_TV_HOWARD_STERN}:/data/howard-stern
-      - ${DATA_ROOT}/${MEDIA_MOVIES}:/data/movies
-      - ${DATA_ROOT}/${MEDIA_MUSIC}:/data/music
-      - ${DATA_ROOT}/${MEDIA_PHOTOS}:/data/photos
+      - ${DATA_ROOT}/${DATA_MEDIA}:/data/media
     ports:
       - "${PLEX_PORT}:32400"
     networks:
@@ -310,11 +322,11 @@ services:
   # -----------------------------------
   # POSTGRES - Database
   # -----------------------------------
-  postgresdb:
+  postgres:
     container_name: postgres
-    image: pgvector/pgvector:pg15
+    image: pgvector/pgvector:pg14
     environment:
-      POSTGRES_INITDB_ARGS: "--locale-provider=icu --icu-locale=en-US"
+      POSTGRES_INITDB_ARGS: "--locale=en_US.UTF-8 --encoding=UTF8"
       TZ: ${TZ}
       POSTGRES_PASSWORD: ${POSTGRES_PASS}
       POSTGRES_USER: ${POSTGRES_USER}      
@@ -322,32 +334,34 @@ services:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - /var/lib/postgres-data:/var/lib/postgresql/data
       - ./postgres-init:/docker-entrypoint-initdb.d
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
     networks:
       - default
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${IMMICH_DB_USER} -d immich"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
       interval: 5s
       timeout: 5s
       retries: 5
       
   postgres-backup:
-    image: postgres:15
+    image: postgres:14
     container_name: postgres-backup
     environment:
-      POSTGRES_HOST: postgresdb
+      POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASS}
       TZ: America/Halifax
     volumes:
       - ${DATA_ROOT}/server-backups:/backups
-      - /home/jeremy/media-servarr/postgres-init/postgres-backup.sh:/usr/local/bin/backup.sh:ro
+      - /home/jeremy/media-servarr/postgres-backup.sh:/usr/local/bin/backup.sh:ro
     entrypoint: ["/bin/bash", "/usr/local/bin/backup.sh"]
     networks:
       - default
     depends_on:
-      - postgresdb
+      - postgres
     
   # -----------------------------------
   # PROWLARR - Indexer
@@ -382,7 +396,7 @@ services:
     volumes:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${QBITTORRENT_CONFIG}:/config
-      - ${DATA_ROOT}/${DOWNLOADS}:/data/downloads
+      - ${DATA_ROOT}/${DATA_TORRENTS}:/data/torrents
     ports:
       - "${QBITTORRENT_WEB_PORT}:${QBITTORRENT_WEB_PORT}"
       - "6881:6881"
@@ -409,15 +423,14 @@ services:
     volumes:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${RADARR_CONFIG}:/config
-      - ${DATA_ROOT}/${MEDIA_MOVIES}:/data/movies
-      - ${DATA_ROOT}/${DOWNLOADS}:/data/downloads
+      - ${DATA_ROOT}/${DATA}:/data
     ports:
       - "${RADARR_PORT}:${RADARR_PORT}"
     networks:
       - default
     restart: unless-stopped
     depends_on:
-      postgresdb:
+      postgres:
         condition: service_healthy
       prowlarr:
         condition: service_started
@@ -437,8 +450,7 @@ services:
     volumes:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${READARR_CONFIG}:/config
-      - ${DATA_ROOT}/${MEDIA_BOOKS}:/data/books
-      - ${DATA_ROOT}/${DOWNLOADS}:/data/downloads
+      - ${DATA_ROOT}/${DATA}:/data
     ports:
       - "${READARR_PORT}:${READARR_PORT}"
     networks:
@@ -468,10 +480,25 @@ services:
     volumes:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${SABNZBD_CONFIG}:/config
-      - ${DATA_ROOT}/${DOWNLOADS}:/data/downloads
+      - ${DATA_ROOT}/${DATA_USENET}:/data/usenet
     ports:
       - "${SABNZBD_WEB_PORT}:8080"
       - "9090:9090"
+    networks:
+      - default
+    restart: unless-stopped
+
+  # -----------------------------------
+  # SEERR - Request Management
+  # -----------------------------------
+  seerr:
+    image: ghcr.io/sct/overseerr
+    container_name: seerr
+    ports:
+      - "5056:5055"
+    volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
+      - ${DATA_ROOT}/${SEERR_CONFIG}:/app/config
     networks:
       - default
     restart: unless-stopped
@@ -489,9 +516,7 @@ services:
     volumes:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${SONARR_CONFIG}:/config
-      - ${DATA_ROOT}/${MEDIA_TV}:/data/tv:rw
-      - ${DATA_ROOT}/${MEDIA_TV_HOWARD_STERN}:/data/howard-stern:rw
-      - ${DATA_ROOT}/${DOWNLOADS}:/data/downloads
+      - ${DATA_ROOT}/${DATA_MEDIA}:/data/media
     ports:
       - "${SONARR_PORT}:${SONARR_PORT}"
     networks:
@@ -510,10 +535,9 @@ services:
       PLEXTOKEN: ${PLEX_TOKEN}
       PLEXSERVER: http://plex:${PLEX_PORT}
     volumes:
-       - ${DATA_ROOT}/${MEDIA_TV}:/data/tv
-       - ${DATA_ROOT}/${MEDIA_MOVIES}:/data/movies
-       - ${DATA_ROOT}/${SUBGENAI_DATA}/models:/subgen/models
-       - ${DATA_ROOT}/${SUBGENAI_DATA}/subgen.env:/subgen/subgen.env:ro
+      - ${DATA_ROOT}/${DATA_MEDIA}:/data/media
+      - ${DATA_ROOT}/${SUBGENAI_DATA}/models:/subgen/models
+      - ${DATA_ROOT}/${SUBGENAI_DATA}/subgen.env:/subgen/subgen.env:ro
     ports:
        - "${SUBGEN_PORT}:9000"
     networks:
@@ -527,10 +551,10 @@ services:
   # -----------------------------------
   tandoor:
     container_name: tandoor
-    image: vabene1111/recipes:latest
+    image: vabene1111/recipes:tandoor-v1
     environment:
       TZ: ${TZ}
-      POSTGRES_HOST: postgres://postgresdb:5432
+      POSTGRES_HOST: postgres://postgres:5432
       POSTGRES_DB: djangodb
       POSTGRES_PORT: 5432
       POSTGRES_USER: ${TANDOOR_DB_USER}
@@ -549,8 +573,30 @@ services:
       - default
     restart: unless-stopped
     depends_on:
-      postgresdb:
+      postgres:
         condition: service_healthy
+
+
+  # -----------------------------------
+  # TAUTULLI - PLEX Monitor
+  # -----------------------------------
+  tautulli:
+    container_name: tautulli
+    image: ghcr.io/tautulli/tautulli:latest
+    restart: unless-stopped
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+    volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
+      - ${DATA_ROOT}/${TAUTULLI_CONFIG}:/config
+      - ${DATA_ROOT}/${TAUTULLI_LOGS}:/logs
+    ports:
+      - "48088:8181"
+    networks:
+      - default
+
 
   # -----------------------------------
   # VAULTWARDEN - Password Manager
@@ -567,7 +613,7 @@ services:
     env_file: ${DATA_ROOT}/${VAULT_CONFIG}/vaultwarden.env
     environment:
       WEBSOCKET_ENABLED: "true"
-      DATABASE_URL: "postgres://${VAULT_DB_USER}:${VAULT_DB_PASS}@postgresdb:5432/vaultwarden"
+      DATABASE_URL: "postgres://${VAULT_DB_USER}:${VAULT_DB_PASS}@postgres:5432/vaultwarden"
       # External URL configuration
       DOMAIN: "https://vaultwarden.phoenix-server.cc"
       # Tell Vaultwarden to always assume HTTPS when behind reverse proxy
@@ -584,7 +630,7 @@ services:
       - default
     restart: unless-stopped
     depends_on:
-      postgresdb:
+      postgres:
         condition: service_healthy
 
   # -----------------------------------
@@ -600,8 +646,7 @@ services:
     volumes:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${WHISPARR_CONFIG}:/config
-      - ${DATA_ROOT}/${MEDIA_ADULT}:/data/adult
-      - ${DATA_ROOT}/${DOWNLOADS}:/data/downloads
+      - ${DATA_ROOT}/${DATA}:/data
     ports:
       - "${WHISPARR_PORT}:${WHISPARR_PORT}"
     networks:

@@ -157,3 +157,51 @@ docker-compose logs radarr
 
 docker exec -it postgres psql -U postgres -d postgres
 
+\l		- list DBs
+\du 	- list users
+
+
+## Docker Commands
+
+Stop all containers:
+	docker compose down
+
+Start all containers:
+	docker compose up -d
+
+Prune old Docker volumes and mounts:
+	docker system prune -af --volumes
+
+
+## SQLlite to Postgres migration
+
+
+1. Create the databases, e.g. CREATE DATABASE sonarr; and CREATE DATABASE sonarr_log;,
+
+2. Configure the app to use postgres and start it, which will create the tables
+	> docker compose up -d sonarr
+
+3. Dump the schema: pg_dump sonarr -s > sonarr.sql
+	> docker exec -i postgres sh -c "pg_dump -U postgres -d sonarr -s" > ~/media-servarr-app-data/server-backups/_psql/sonarr/sonarr.sql
+
+4. Drop the database and recreate it, e.g. DROP DATABASE sonarr; DROP DATABASE sonarr;
+	> docker exec -it postgres psql -U postgres -d postgres
+	> DROP DATABASE sonarr;
+	> CREATE DATABASE sonarr OWNER sonarr_user;
+	> exit
+	
+
+5. Import the schema you've just dumped: psql sonarr < sonarr.sql
+	> PG_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' postgres)
+	> pgloader sqlite:///home/jeremy/media-servarr-app-data/server-backups/sonarr/manual/sonarr_backup_v4.0.15.2940_2025.11.14_10.57.43/sonarr.db  postgresql://postgres@${PG_IP}:5432/sonarr
+
+
+docker run --rm -it \
+  --network=media-servarr_default \
+  -v /home/jeremy/media-servarr-app-data/server-backups/sonarr/manual/sonarr_backup_v4.0.15.2940_2025.11.14_10.57.43:/data \
+  dimitri/pgloader:latest \
+  pgloader sqlite:///data/sonarr.db postgresql://postgres:dNhv6pQMkpGM@postgres:5432/sonarr
+
+
+
+6. Import your old database using pgloader.

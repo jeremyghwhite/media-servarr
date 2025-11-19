@@ -24,38 +24,20 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 -- Create the Tandoor database
 CREATE DATABASE tandoor;
-
--- Connect to the new database and create roles
 \connect tandoor
-
--- Create the tandoor user
 CREATE USER tandoor_user WITH PASSWORD 'hZj9VTkJBRs2';
-
--- Grant privileges
 GRANT ALL PRIVILEGES ON DATABASE tandoor TO tandoor_user;
 
 -- Create the Joplin database
 CREATE DATABASE joplin;
-
--- Connect to the new database and create roles
 \connect joplin
-
--- Create the joplin user
 CREATE USER joplin_user WITH PASSWORD 'fH72sJkP2xM8nW';
-
--- Grant privileges
 GRANT ALL PRIVILEGES ON DATABASE joplin TO joplin_user;
 
 -- Create the Vaultwarden database
 CREATE DATABASE vaultwarden;
-
--- Connect to the new database and create roles
-\connect joplin
-
--- Create the vault user
+\connect vaultwarden
 CREATE USER vault_user WITH PASSWORD 'b4L7a3MGGbJJ';
-
--- Grant privileges
 GRANT ALL PRIVILEGES ON DATABASE vaultwarden TO vault_user;
 GRANT CONNECT ON DATABASE vaultwarden TO vault_user;
 GRANT USAGE ON SCHEMA public TO vault_user;
@@ -74,22 +56,17 @@ CREATE USER bazarr_user WITH PASSWORD 'YmQFf8Z9UytZ';
 ALTER DATABASE bazarr OWNER TO bazarr_user;
 ALTER SCHEMA public OWNER TO bazarr_user;
 GRANT ALL ON SCHEMA public TO bazarr_user;
-
--- Create Calibre database and user
-
-CREATE DATABASE calibre;
-\connect calibre
-CREATE USER calibre_user WITH PASSWORD 'ftIa82XE6GeL';
-ALTER DATABASE calibre OWNER TO calibre_user;
-ALTER SCHEMA public OWNER TO calibre_user;
-GRANT ALL ON SCHEMA public TO calibre_user;
+GRANT ALL PRIVILEGES ON DATABASE bazarr TO bazarr_user;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO bazarr_user;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO bazarr_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO bazarr_user;
 
 -- Create Homeassistant database and user
 
 CREATE DATABASE homeassistant;
 \connect homeassistant
 CREATE USER homeassistant_user WITH PASSWORD '3onoMrPULWgI';
-ALTER DATABASE homeassistant OWNER TO homeassistant_user;
+ALTER DATABASE homeassistant WITH OWNER homeassistant_user ENCODING 'UTF8' TEMPLATE template0;
 ALTER SCHEMA public OWNER TO homeassistant_user;
 GRANT ALL ON SCHEMA public TO homeassistant_user;
 
@@ -112,96 +89,148 @@ ALTER SCHEMA public OWNER TO jellyseerr_user;
 GRANT ALL ON SCHEMA public TO jellyseerr_user;
 
 -- Create Lidarr database and user
-CREATE DATABASE lidarr_main;
-\connect lidarr_main
+CREATE DATABASE lidarr;
+\connect lidarr
 CREATE USER lidarr_user WITH PASSWORD 'L4pNc2Gv6uHz';
-ALTER DATABASE lidarr_main OWNER TO lidarr_user;
+ALTER DATABASE lidarr OWNER TO lidarr_user;
 ALTER SCHEMA public OWNER TO lidarr_user;
 GRANT ALL ON SCHEMA public TO lidarr_user;
+GRANT ALL PRIVILEGES ON DATABASE lidarr TO lidarr_user;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO lidarr_user;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO lidarr_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO lidarr_user;
+
 
 CREATE DATABASE lidarr_logs;
 \connect lidarr_logs
 ALTER DATABASE lidarr_logs OWNER TO lidarr_user;
 ALTER SCHEMA public OWNER TO lidarr_user;
 GRANT ALL ON SCHEMA public TO lidarr_user;
-
--- Create Plex database and user
-CREATE DATABASE plex;
-\connect plex
-CREATE USER plex_user WITH PASSWORD 'xklm0F2nPYQC';
-ALTER DATABASE plex OWNER TO plex_user;
-ALTER SCHEMA public OWNER TO plex_user;
-GRANT ALL ON SCHEMA public TO plex_user;
+GRANT ALL PRIVILEGES ON DATABASE lidarr_logs TO lidarr_user;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO lidarr_user;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO lidarr_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO lidarr_user;
 
 -- Create Prowlarr database and user
-CREATE DATABASE prowlarr_main;
-\connect prowlarr_main
+CREATE DATABASE prowlarr;
+\connect prowlarr
 CREATE USER prowlarr_user WITH PASSWORD 'qWN6RPlzMoXP';
-ALTER DATABASE prowlarr_main OWNER TO prowlarr_user;
+ALTER DATABASE prowlarr OWNER TO prowlarr_user;
 ALTER SCHEMA public OWNER TO prowlarr_user;
 GRANT ALL ON SCHEMA public TO prowlarr_user;
+GRANT ALL PRIVILEGES ON DATABASE prowlarr TO prowlarr_user;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO prowlarr_user;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO prowlarr_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO prowlarr_user;
 
 CREATE DATABASE prowlarr_logs;
 \connect prowlarr_logs
 ALTER DATABASE prowlarr_logs OWNER TO prowlarr_user;
 ALTER SCHEMA public OWNER TO prowlarr_user;
 GRANT ALL ON SCHEMA public TO prowlarr_user;
+GRANT ALL PRIVILEGES ON DATABASE prowlarr_logs TO prowlarr_user;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO prowlarr_user;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO prowlarr_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO prowlarr_user;
 
 -- Create Radarr database and user
-CREATE DATABASE sonarr_logs;
-\connect sonarr_logs
+CREATE DATABASE radarr;
+\connect radarr
 CREATE USER radarr_user WITH PASSWORD 'R8vLq3Tz0bYn';
-ALTER DATABASE sonarr_logs OWNER TO radarr_user;
+ALTER DATABASE radarr OWNER TO radarr_user;
 ALTER SCHEMA public OWNER TO radarr_user;
 GRANT ALL ON SCHEMA public TO radarr_user;
+GRANT ALL PRIVILEGES ON DATABASE radarr TO radarr_user;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO radarr_user;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO radarr_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO radarr_user;
 
 CREATE DATABASE radarr_logs;
 \connect radarr_logs
 ALTER DATABASE radarr_logs OWNER TO radarr_user;
 ALTER SCHEMA public OWNER TO radarr_user;
 GRANT ALL ON SCHEMA public TO radarr_user;
+GRANT ALL PRIVILEGES ON DATABASE radarr_logs TO radarr_user;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO radarr_user;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO radarr_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO radarr_user;
 
 -- Create Readarr database and user
-CREATE DATABASE readarr_main;
-\connect readarr_main
+CREATE DATABASE readarr;
+\connect readarr
 CREATE USER readarr_user WITH PASSWORD 'Re4dA1rP8kQz';
-ALTER DATABASE readarr_main OWNER TO readarr_user;
+ALTER DATABASE readarr OWNER TO readarr_user;
 ALTER SCHEMA public OWNER TO readarr_user;
 GRANT ALL ON SCHEMA public TO readarr_user;
+GRANT ALL PRIVILEGES ON DATABASE readarr TO readarr_user;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO readarr_user;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO readarr_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO readarr_user;
 
 CREATE DATABASE readarr_logs;
 \connect readarr_logs
 ALTER DATABASE readarr_logs OWNER TO readarr_user;
 ALTER SCHEMA public OWNER TO readarr_user;
 GRANT ALL ON SCHEMA public TO readarr_user;
+GRANT ALL PRIVILEGES ON DATABASE readarr_logs TO readarr_user;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO readarr_user;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO readarr_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO readarr_user;
+
+CREATE DATABASE readarr_cache;
+\connect readarr_cache
+ALTER DATABASE readarr_cache OWNER TO readarr_user;
+ALTER SCHEMA public OWNER TO readarr_user;
+GRANT ALL ON SCHEMA public TO readarr_user;
+GRANT ALL PRIVILEGES ON DATABASE readarr_cache TO readarr_user;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO readarr_user;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO readarr_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO readarr_user;
 
 -- Create Sonarr database and user
-CREATE DATABASE sonarr_main;
-\connect sonarr_main
+CREATE DATABASE sonarr;
+\connect sonarr
 CREATE USER sonarr_user WITH PASSWORD 'Jx7kP1rV9sQm';
-ALTER DATABASE sonarr_main OWNER TO sonarr_user;
+ALTER DATABASE sonarr OWNER TO sonarr_user;
 ALTER SCHEMA public OWNER TO sonarr_user;
 GRANT ALL ON SCHEMA public TO sonarr_user;
+GRANT ALL PRIVILEGES ON DATABASE sonarr TO sonarr_user;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO sonarr_user;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO sonarr_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO sonarr_user;
+
 
 CREATE DATABASE sonarr_logs;
 \connect sonarr_logs
 ALTER DATABASE sonarr_logs OWNER TO sonarr_user;
 ALTER SCHEMA public OWNER TO sonarr_user;
 GRANT ALL ON SCHEMA public TO sonarr_user;
+GRANT ALL PRIVILEGES ON DATABASE sonarr_logs TO sonarr_user;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO sonarr_user;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO sonarr_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO sonarr_user;
 
 -- Create Whisparr database and user
-CREATE DATABASE whisparr_main;
-\connect whisparr_main
+CREATE DATABASE whisparr;
+\connect whisparr
 CREATE USER whisparr_user WITH PASSWORD 'Aa3o6icHuT';
-ALTER DATABASE whisparr_main OWNER TO whisparr_user;
+ALTER DATABASE whisparr OWNER TO whisparr_user;
 ALTER SCHEMA public OWNER TO whisparr_user;
 GRANT ALL ON SCHEMA public TO whisparr_user;
+GRANT ALL PRIVILEGES ON DATABASE whisparr TO whisparr_user;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO whisparr_user;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO whisparr_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO whisparr_user;
 
 CREATE DATABASE whisparr_logs;
 \connect whisparr_logs
 ALTER DATABASE whisparr_logs OWNER TO whisparr_user;
 ALTER SCHEMA public OWNER TO whisparr_user;
 GRANT ALL ON SCHEMA public TO whisparr_user;
+GRANT ALL PRIVILEGES ON DATABASE whisparr_logs TO whisparr_user;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO whisparr_user;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO whisparr_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO whisparr_user;
 
 
 
