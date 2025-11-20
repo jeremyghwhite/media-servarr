@@ -1,7 +1,59 @@
 services:
-  # -----------------------------------
-  # BAZARR - Subtitles
-  # -----------------------------------
+#-----------------------------------------------#
+#     AUTHENTIK - SSO Management                #
+#-----------------------------------------------#
+  authentik-server:
+    image: ghcr.io/goauthentik/server:latest
+    command: server
+    environment:
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_TOKEN}
+      AUTHENTIK_LOG_LEVEL: info
+      AUTHENTIK_POSTGRESQL__HOST: postgres
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__USER: ${AUTHENTIK_DB_USER}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_DB_PASS}
+      AUTHENTIK_REDIS__HOST: redis
+    volumes:
+      - ${DATA_ROOT}/${AUTHENTIK_DATA}/media:/media
+      - ${DATA_ROOT}/${AUTHENTIK_DATA}/templates:/templates
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    ports:
+      - "9000:9000"
+      - "9443:9443"
+    networks:
+      - default
+    restart: unless-stopped
+
+  authentik-worker:
+    image: ghcr.io/goauthentik/server:latest
+    command: worker
+    environment:
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_TOKEN}
+      AUTHENTIK_POSTGRESQL__HOST: postgres
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__USER: ${AUTHENTIK_DB_USER}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_DB_PASS}
+      AUTHENTIK_REDIS__HOST: redis
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${DATA_ROOT}/${AUTHENTIK_DATA}/media:/media
+      - ${DATA_ROOT}/${AUTHENTIK_DATA}/certs:/certs
+      - ${DATA_ROOT}/${AUTHENTIK_DATA}/templates:/templates
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+
+
+#-----------------------------------------------#
+#     BAZARR - Subtitles                        #
+#-----------------------------------------------#
   bazarr:
     container_name: bazarr
     image: ghcr.io/hotio/bazarr:latest
@@ -19,9 +71,10 @@ services:
       - default
     restart: unless-stopped
 
-  # -----------------------------------
-  # CADDY - Reverse Proxy
-  # -----------------------------------
+
+#-----------------------------------------------#
+#     CADDY - Reverse Proxy                     #
+#-----------------------------------------------#
   caddy:
     container_name: caddy
     image: caddy:2
@@ -71,9 +124,10 @@ services:
       whisparr:
         condition: service_started
 
-  # -----------------------------------
-  # CALIBRE - E-Book Reader
-  # -----------------------------------
+
+#-----------------------------------------------#
+#     CALIBRE - E-Book Reader                   #
+#-----------------------------------------------#
   calibre:
     container_name: calibre
     image: linuxserver/calibre-web
@@ -92,9 +146,10 @@ services:
       - default
     restart: unless-stopped
 
-  # -----------------------------------
-  # CLOUDFLARED - Cloudflare Tunnel (for external access)
-  # -----------------------------------
+
+#-----------------------------------------------#
+#     CLOUDFLARED - Cloudflare Tunnel           #
+#-----------------------------------------------#
   cloudflared:
     container_name: cloudflared
     image: cloudflare/cloudflared:latest
@@ -122,9 +177,9 @@ services:
       - default
     restart: unless-stopped
 
-  # -----------------------------------
-  # DECLUTTARR - Media Cleanup
-  # -----------------------------------
+#-----------------------------------------------#
+#     DECLUTTARR - Media Cleanup                #
+#-----------------------------------------------#
   decluttarr:
     container_name: decluttarr
     image: ghcr.io/manimatter/decluttarr:v1.50.2
@@ -149,9 +204,27 @@ services:
       - default
     restart: unless-stopped
 
-  # -----------------------------------
-  # HOMEASSISTANT - Home Automation
-  # -----------------------------------
+#-----------------------------------------------#
+#     HOMARR - Serve Dashboard                  #
+#-----------------------------------------------#
+  homarr:
+    container_name: homarr
+    image: ghcr.io/homarr-labs/homarr:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock # Optional, only if you want docker integration
+      - ${DATA_ROOT}/${HOMARR_DATA}:/appdata
+    environment:
+      SECRET_ENCRYPTION_KEY: ${HOMARR_KEY}
+    ports:
+      - '${HOMARR_PORT}:${HOMARR_PORT}'
+    networks:
+      - default
+    restart: unless-stopped
+
+
+#-----------------------------------------------#
+#    HOMEASSISTANT - Home Automation            #
+#-----------------------------------------------#
   homeassistant:
     container_name: homeassistant
     image: ghcr.io/home-assistant/home-assistant:stable
@@ -166,9 +239,10 @@ services:
       - default
     restart: unless-stopped
 
-  # -----------------------------------
-  # IMMICH - Photo Management
-  # -----------------------------------
+
+#-----------------------------------------------#
+#     IMMICH - Photo Management                 #
+#-----------------------------------------------#
   immich:
     container_name: immich
     image: ghcr.io/immich-app/immich-server:release
@@ -192,9 +266,10 @@ services:
       redis:
         condition: service_started
 
-  # -----------------------------------
-  # JELLYFIN - Media Server
-  # -----------------------------------
+
+#-----------------------------------------------#
+#     JELLYFIN - Media Server                   #
+#-----------------------------------------------#
   jellyfin:
     container_name: jellyfin
     image: jellyfin/jellyfin:latest
@@ -213,9 +288,10 @@ services:
       - default
     restart: unless-stopped
 
-  # -----------------------------------
-  # JELLYSEERR - Request Management
-  # -----------------------------------
+
+#-----------------------------------------------#
+#     JELLYSEERR - Request Management           #
+#-----------------------------------------------#
   jellyseerr:
     container_name: jellyseerr
     image: fallenbagel/jellyseerr:latest
@@ -237,9 +313,10 @@ services:
       - default
     restart: unless-stopped
 
-  # -----------------------------------
-  # JOPLIN - Note Taking
-  # -----------------------------------
+
+#-----------------------------------------------#
+#     JOPLIN - Note Taking                      #
+#-----------------------------------------------#
   joplin:
     container_name: joplin
     image: joplin/server:latest
@@ -264,9 +341,10 @@ services:
       postgres:
         condition: service_healthy
 
-  # -----------------------------------
-  # LIDARR - Music
-  # -----------------------------------
+
+#-----------------------------------------------#
+#     LIDARR - Music                            #
+#-----------------------------------------------#
   lidarr:
     container_name: lidarr
     image: linuxserver/lidarr:develop
@@ -284,9 +362,10 @@ services:
       - default
     restart: unless-stopped
 
-  # -----------------------------------
-  # PGLOADER - Database Migration
-  # -----------------------------------
+
+#-----------------------------------------------#
+#     PGLOADER - Database Migration             #
+#-----------------------------------------------#
   pgloader:
     image: dimitri/pgloader:latest
     container_name: pgloader
@@ -298,9 +377,9 @@ services:
     entrypoint: ["tail", "-f", "/dev/null"]
 
 
-  # -----------------------------------
-  # PLEX - Media Server
-  # -----------------------------------
+#-----------------------------------------------#
+#     PLEX - Media Server                       #
+#-----------------------------------------------#
   plex:
     container_name: plex
     image: linuxserver/plex
@@ -319,9 +398,10 @@ services:
       - default
     restart: unless-stopped
 
-  # -----------------------------------
-  # POSTGRES - Database
-  # -----------------------------------
+
+#-----------------------------------------------#
+#     POSTGRES - Database                       #
+#-----------------------------------------------#
   postgres:
     container_name: postgres
     image: pgvector/pgvector:pg14
@@ -363,9 +443,10 @@ services:
     depends_on:
       - postgres
     
-  # -----------------------------------
-  # PROWLARR - Indexer
-  # -----------------------------------
+    
+#-----------------------------------------------#
+#     PROWLARR - Indexer                        #
+#-----------------------------------------------#
   prowlarr:
     container_name: prowlarr
     image: linuxserver/prowlarr:latest
@@ -382,9 +463,10 @@ services:
       - default
     restart: unless-stopped
     
-  # -----------------------------------
-  # QBITTORRENT - Torrent Download Client
-  # -----------------------------------
+    
+#-----------------------------------------------#
+#     QBITTORRENT - Torrent Download Client     #
+#-----------------------------------------------#
   qbittorrent:
     container_name: qbittorrent
     image: linuxserver/qbittorrent:latest
@@ -405,9 +487,10 @@ services:
       - default
     restart: unless-stopped
 
-  # -----------------------------------
-  # RADARR - Movies
-  # -----------------------------------
+
+#-----------------------------------------------#
+#     RADARR - Movies                           #
+#-----------------------------------------------#
   radarr:
     container_name: radarr
     image: linuxserver/radarr:develop
@@ -437,9 +520,10 @@ services:
       qbittorrent:
         condition: service_started
 
-  # -----------------------------------
-  # READARR - Books
-  # -----------------------------------
+
+#-----------------------------------------------#
+#     READARR - Books                           #
+#-----------------------------------------------#
   readarr:
     container_name: readarr
     image: ghcr.io/hotio/readarr:latest
@@ -457,9 +541,10 @@ services:
       - default
     restart: unless-stopped
 
-  # -----------------------------------
-  # REDIS - Cache Server
-  # -----------------------------------
+
+#-----------------------------------------------#
+#     REDIS - Cache Server                      #
+#-----------------------------------------------#
   redis:
     container_name: redis
     image: redis:7
@@ -467,9 +552,10 @@ services:
     networks:
       - default
 
-  # -----------------------------------
-  # SABNZBD - Usenet Download Client
-  # -----------------------------------
+
+#-----------------------------------------------#
+#     SABNZBD - Usenet Download Client          #
+#-----------------------------------------------#
   sabnzbd:
     container_name: sabnzbd
     image: ghcr.io/hotio/sabnzbd:latest
@@ -489,9 +575,9 @@ services:
     restart: unless-stopped
 
 
-  # -----------------------------------
-  # SONARR - TV Shows
-  # -----------------------------------
+#-----------------------------------------------#
+#     SONARR - TV Shows                         #
+#-----------------------------------------------#
   sonarr:
     container_name: sonarr
     image: linuxserver/sonarr:develop
@@ -509,9 +595,10 @@ services:
       - default
     restart: unless-stopped
 
-  # -----------------------------------
-  # SUBGENAI - AI Subtitle Generator
-  # -----------------------------------
+
+#-----------------------------------------------#
+#     SUBGENAI - AI Subtitle Generator          #
+#-----------------------------------------------#
   subgenai:
     container_name: subgenai
     image: mccloud/subgen:cpu
@@ -532,9 +619,10 @@ services:
       bazarr:
         condition: service_started
 
-  # -----------------------------------
-  # TANDOOR - Recipe Management
-  # -----------------------------------
+
+#-----------------------------------------------#
+#     TANDOOR - Recipe Management               #
+#-----------------------------------------------#
   tandoor:
     container_name: tandoor
     image: vabene1111/recipes:tandoor-v1
@@ -563,9 +651,9 @@ services:
         condition: service_healthy
 
 
-  # -----------------------------------
-  # TAUTULLI - PLEX Monitor
-  # -----------------------------------
+#-----------------------------------------------#
+#     TAUTULLI - PLEX Monitor                   #
+#-----------------------------------------------#
   tautulli:
     container_name: tautulli
     image: ghcr.io/tautulli/tautulli:latest
@@ -574,6 +662,9 @@ services:
       PUID: ${PUID}
       PGID: ${PGID}
       TZ: ${TZ}
+      TAUTULLI__HTTP_PROXY: 1
+      TAUTULLI__HTTP_FORCE_SSL: 1
+      TAUTULLI__HTTP_ROOT: /
     volumes:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${TAUTULLI_CONFIG}:/config
@@ -584,9 +675,9 @@ services:
       - default
 
 
-  # -----------------------------------
-  # VAULTWARDEN - Password Manager
-  # -----------------------------------
+#-----------------------------------------------#
+#     VAULTWARDEN - Password Manager            #
+#-----------------------------------------------#
   vaultwarden:
     container_name: vaultwarden
     image: vaultwarden/server:latest
@@ -619,9 +710,9 @@ services:
       postgres:
         condition: service_healthy
 
-  # -----------------------------------
-  # Adult Media
-  # -----------------------------------
+#-----------------------------------------------#
+#    WHISPARR - Adult Media                     #
+#-----------------------------------------------#
   whisparr:
     container_name: whisparr
     image: ghcr.io/hotio/whisparr:latest
@@ -639,9 +730,9 @@ services:
       - default
     restart: unless-stopped
 
-  # -----------------------------------
-  # NETWORK
-  # ----------------------------------- 
+#-----------------------------------------------#
+#     NETWORK                                   #
+#-----------------------------------------------# 
 networks:
   default:
     driver: bridge

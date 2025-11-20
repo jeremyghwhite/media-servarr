@@ -1,10 +1,13 @@
+-- Create Authentik database
+CREATE DATABASE authentik;
+\connect authentik
+CREATE USER authentik_user WITH PASSWORD 'TmTN1Gc6voyPkp';
+
+
 -- Create the Immich database
 CREATE DATABASE immich;
-
--- Connect to the new database and create roles
 \connect immich
 
--- Create required extensions as superuser
 CREATE EXTENSION IF NOT EXISTS cube;
 CREATE EXTENSION IF NOT EXISTS earthdistance;
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
@@ -12,13 +15,9 @@ CREATE EXTENSION IF NOT EXISTS vector;
 
 -- Create the immich user
 CREATE USER immich_user WITH PASSWORD 'veD9r24Nf5vwuR';
-
--- Grant privileges to immich_user
 ALTER DATABASE immich OWNER TO immich_user;
 ALTER SCHEMA public OWNER TO immich_user;
 GRANT ALL ON SCHEMA public TO immich_user;
-
--- Enable required extensions in the immich database
 CREATE EXTENSION IF NOT EXISTS vector;
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
