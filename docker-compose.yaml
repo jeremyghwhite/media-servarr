@@ -31,6 +31,7 @@ services:
   authentik-worker:
     image: ghcr.io/goauthentik/server:latest
     command: worker
+    privileged: true
     environment:
       AUTHENTIK_SECRET_KEY: ${AUTHENTIK_TOKEN}
       AUTHENTIK_POSTGRESQL__HOST: postgres
@@ -87,10 +88,14 @@ services:
     ports:
       - "443:443"
       - "80:80"
+    extra_hosts:
+      - "auth.phoenix-server.cc:172.18.0.30"
     networks:
       - default
     restart: unless-stopped
     depends_on:
+      authentik-server:
+        condition: service_started
       calibre:
         condition: service_started
       homeassistant:

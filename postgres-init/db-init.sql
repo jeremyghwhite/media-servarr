@@ -2,24 +2,39 @@
 CREATE DATABASE authentik;
 \connect authentik
 CREATE USER authentik_user WITH PASSWORD 'TmTN1Gc6voyPkp';
+GRANT ALL PRIVILEGES ON DATABASE authentik TO authentik_user;
+
+-- Create Bazarr database and user
+CREATE USER bazarr_user WITH PASSWORD 'YmQFf8Z9UytZ';
+CREATE DATABASE bazarr OWNER bazarr_user;
+\connect bazarr
+ALTER SCHEMA public OWNER TO bazarr_user;
+GRANT ALL ON SCHEMA public TO bazarr_user;
+GRANT ALL PRIVILEGES ON DATABASE bazarr TO bazarr_user;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO bazarr_user;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO bazarr_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO bazarr_user;
+
+
+-- Create Homeassistant database and user
+CREATE USER homeassistant_user WITH PASSWORD '3onoMrPULWgI';
+CREATE DATABASE homeassistant OWNER homeassistant_user ENCODING 'UTF8' TEMPLATE template0;
+\connect homeassistant
+ALTER SCHEMA public OWNER TO homeassistant_user;
+GRANT ALL ON SCHEMA public TO homeassistant_user;
 
 
 -- Create the Immich database
-CREATE DATABASE immich;
+CREATE USER immich_user WITH PASSWORD 'veD9r24Nf5vwuR';
+CREATE DATABASE immich OWNER immich_user;
 \connect immich
-
 CREATE EXTENSION IF NOT EXISTS cube;
 CREATE EXTENSION IF NOT EXISTS earthdistance;
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 CREATE EXTENSION IF NOT EXISTS vector;
-
--- Create the immich user
-CREATE USER immich_user WITH PASSWORD 'veD9r24Nf5vwuR';
-ALTER DATABASE immich OWNER TO immich_user;
 ALTER SCHEMA public OWNER TO immich_user;
 GRANT ALL ON SCHEMA public TO immich_user;
-CREATE EXTENSION IF NOT EXISTS vector;
-CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
 
 -- Create the Tandoor database
 CREATE DATABASE tandoor;
@@ -47,27 +62,6 @@ GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO vault_user;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO vault_user;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO vault_user;
 ALTER DATABASE vaultwarden OWNER TO vault_user;
-
--- Create Bazarr database and user
-CREATE DATABASE bazarr;
-\connect bazarr
-CREATE USER bazarr_user WITH PASSWORD 'YmQFf8Z9UytZ';
-ALTER DATABASE bazarr OWNER TO bazarr_user;
-ALTER SCHEMA public OWNER TO bazarr_user;
-GRANT ALL ON SCHEMA public TO bazarr_user;
-GRANT ALL PRIVILEGES ON DATABASE bazarr TO bazarr_user;
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO bazarr_user;
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO bazarr_user;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO bazarr_user;
-
--- Create Homeassistant database and user
-
-CREATE DATABASE homeassistant;
-\connect homeassistant
-CREATE USER homeassistant_user WITH PASSWORD '3onoMrPULWgI';
-ALTER DATABASE homeassistant WITH OWNER homeassistant_user ENCODING 'UTF8' TEMPLATE template0;
-ALTER SCHEMA public OWNER TO homeassistant_user;
-GRANT ALL ON SCHEMA public TO homeassistant_user;
 
 -- Create Jellyfin database and user
 
