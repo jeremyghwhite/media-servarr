@@ -203,7 +203,7 @@ services:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${DECLUTTARR_CONFIG}/config.yaml:/app/config/config.yaml
       - ${DATA_ROOT}/${DECLUTTARR_DATA}/logs:/app/logs
-      - ${DATA_ROOT}/${DATA_MEDIA}:media
+      - ${DATA_ROOT}/${DATA_MEDIA}:/media
     ports:
       - "${DECLUTTARR_PORT}:${DECLUTTARR_PORT}"
     networks:

@@ -1,0 +1,38 @@
+# Set default behavior to automatically normalize line endings
+* text=auto
+
+# Force LF line endings for files that need to work on Linux/WSL
+*.yaml text eol=lf
+*.yml text eol=lf
+*.sh text eol=lf
+*.ps1 text eol=crlf
+
+# Docker and compose files should use LF
+docker-compose.yaml text eol=lf
+compose*.yml text eol=lf
+Dockerfile* text eol=lf
+
+# Scripts
+*.sh text eol=lf
+*.ps1 text eol=crlf
+
+# Config files
+*.xml text eol=lf
+*.json text eol=lf
+*.sql text eol=lf
+
+# Documentation
+*.md text eol=lf
+
+# Binary files
+*.db binary
+*.sqlite binary
+*.sqlite3 binary
+*.log binary
+*.pid binary
+*.gz binary
+*.zip binary
+*.jpg binary
+*.png binary
+*.jpeg binary
+

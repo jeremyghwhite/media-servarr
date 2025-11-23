@@ -3,6 +3,7 @@
 
 # Allow only these files/dirs to be tracked
 !.gitignore
+!.gitattributes
 !README.md
 !.env
 !.env.example
@@ -15,3 +16,26 @@
 # Keep DB/init snippets that are part of deployment
 !postgres-init/
 !postgres-init/**
+
+# Allow config directories (if added via symlink or copy)
+# Note: We track files inside, not the symlinks/junctions themselves
+!configs/
+!configs/**/
+!configs/**/.gitignore
+!configs/**/*.xml
+!configs/**/*.yaml
+!configs/**/*.yml
+!configs/**/*.json
+
+# Ignore junction/symlink directory entries themselves (Git can't index them on Windows)
+# Git sees junctions as files but can't open them, so we exclude them explicitly
+/configs/bazarr
+/configs/caddy
+/configs/calibre
+/configs/cloudflared
+/configs/decluttarr
+/configs/homeassistant
+/configs/jellyseerr
+/configs/lidarr
+/configs/radarr
+/configs/sonarr
