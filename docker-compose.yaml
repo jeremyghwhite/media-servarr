@@ -201,8 +201,9 @@ services:
       LIDARR_KEY: ${LIDARR_API_KEY}
     volumes:
       - ${DATA_ROOT}/${BACKUPS}:/backup
-      - ${DATA_ROOT}/${DECLUTTARR_CONFIG}:/config
-      - ${DATA_ROOT}/${DATA}:/data
+      - ${DATA_ROOT}/${DECLUTTARR_CONFIG}/config.yaml:/app/config/config.yaml
+      - ${DATA_ROOT}/${DECLUTTARR_DATA}/logs:/app/logs
+      - ${DATA_ROOT}/${DATA_MEDIA}:media
     ports:
       - "${DECLUTTARR_PORT}:${DECLUTTARR_PORT}"
     networks:
