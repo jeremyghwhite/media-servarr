@@ -420,6 +420,8 @@ services:
   postgres:
     container_name: postgres
     image: pgvector/pgvector:pg14
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
     environment:
       POSTGRES_INITDB_ARGS: "--locale=en_US.UTF-8 --encoding=UTF8"
       TZ: ${TZ}
@@ -441,8 +443,10 @@ services:
       retries: 5
       
   postgres-backup:
-    image: postgres:14
     container_name: postgres-backup
+    image: postgres:14
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
     environment:
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
@@ -741,6 +745,26 @@ services:
       - ${DATA_ROOT}/${DATA}:/data
     ports:
       - "${WHISPARR_PORT}:${WHISPARR_PORT}"
+    networks:
+      - default
+    restart: unless-stopped
+
+
+#-----------------------------------------------#
+#     WATCHTOWER - Auto-update Containers       #
+#-----------------------------------------------#
+  watchtower:
+    container_name: watchtower
+    image: containrrr/watchtower:latest
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_INCLUDE_STOPPED=false
+      - WATCHTOWER_REVIVE_STOPPED=false
+      - WATCHTOWER_POLL_INTERVAL=3600
+      - TZ=${TZ}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 3600 --cleanup
     networks:
       - default
     restart: unless-stopped
