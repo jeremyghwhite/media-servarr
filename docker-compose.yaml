@@ -112,6 +112,8 @@ services:
         condition: service_started
       lidarr:
         condition: service_started
+      mylar3:
+        condition: service_started
       qbittorrent:
         condition: service_started
       radarr:
@@ -398,6 +400,33 @@ services:
     restart: unless-stopped
 
 
+#-----------------------------------------------#
+#     MYLAR3 - Comic Books                      #
+#-----------------------------------------------#
+  mylar3:
+    container_name: mylar3
+    image: lscr.io/linuxserver/mylar3:latest
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+    volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
+      - ${DATA_ROOT}/${MYLAR3_CONFIG}:/config
+      - ${DATA_ROOT}/${DATA_MEDIA}:/data
+      - ${DATA_ROOT}/${MEDIA_COMICS}:/comics
+    ports:
+      - "${MYLAR3_PORT}:${MYLAR3_PORT}"
+    networks:
+      - default
+    restart: unless-stopped
+    depends_on:
+      prowlarr:
+        condition: service_started
+      qbittorrent:
+        condition: service_started
+        
+        
 #-----------------------------------------------#
 #     PGLOADER - Database Migration             #
 #-----------------------------------------------#
