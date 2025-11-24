@@ -100,6 +100,8 @@ services:
         condition: service_started
       homeassistant:
         condition: service_started
+      homarr:
+        condition: service_started
       immich:
         condition: service_healthy
       jellyfin:
@@ -221,6 +223,13 @@ services:
       - ${DATA_ROOT}/${HOMARR_DATA}:/appdata
     environment:
       SECRET_ENCRYPTION_KEY: ${HOMARR_KEY}
+      DB_DRIVER: node-postgres
+      DB_DIALECT: postgresql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: homarr
+      DB_USER: ${HOMARR_DB_USER}
+      DB_PASSWORD: ${HOMARR_DB_PASS}
     ports:
       - '${HOMARR_PORT}:${HOMARR_PORT}'
     networks:

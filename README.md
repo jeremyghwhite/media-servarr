@@ -160,6 +160,12 @@ docker exec -it postgres psql -U postgres -d postgres
 \l		- list DBs
 \du 	- list users
 
+SELECT pg_terminate_backend(pid)
+FROM pg_stat_activity
+WHERE datname='sonarr'
+  AND pid <> pg_backend_pid();
+
+
 
 ## Docker Commands
 
@@ -205,3 +211,85 @@ docker run --rm -it \
 
 
 6. Import your old database using pgloader.
+
+
+====
+
+
+1. Stop Sonarr
+	docker compose stop sonarr
+2. delete old sonarr and sonarr_logs sqlite DBs
+	rm /home/jeremy/media-servarr-app-data/sonarr/config/logs.db*
+	rm /home/jeremy/media-servarr-app-data/sonarr/config/sonarr.db*
+3. DELETE/RECREATE
+	docker exec -it postgres psql -U postgres -c "DROP DATABASE sonarr;"
+	docker exec -it postgres psql -U postgres -c "CREATE DATABASE sonarr OWNER sonarr_user;"
+
+	docker exec -it postgres psql -U postgres -c "DROP DATABASE sonarr_logs;"
+	docker exec -it postgres psql -U postgres -c "CREATE DATABASE sonarr_logs OWNER sonarr_user;"
+4. Restore sqlite DB using pgloader
+
+docker run --rm -it \
+  --network=media-servarr_default \
+  -v /home/jeremy/media-servarr-app-data/server-backups/sonarr/manual/sonarr_backup_v4.0.15.2940_2025.11.14_10.57.43:/data \
+  dimitri/pgloader:latest \
+  pgloader sqlite:///data/sonarr.db postgresql://postgres:dNhv6pQMkpGM@postgres:5432/sonarr
+5. Start Sonarr
+	docker compose up -d sonarr
+
+
+---- Using pgloader in docker container ----
+
+If you want to completely reset Sonarr’s PostgreSQL DB to “fresh install” state, run this:
+
+DROP DATABASE sonarr;
+DROP DATABASE sonarr_logs;
+CREATE DATABASE sonarr;
+CREATE DATABASE sonarr_logs;
+
+After that:
+- Start Sonarr
+- It will recreate tables automatically
+- Stop Sonarr
+- Run pgloader
+
+1. manual backup on sqlite DB
+2. Update config.xml with postgres configuration
+
+  <PostgresUser>sonarr_user</PostgresUser>
+  <PostgresPassword>Jx7kP1rV9sQm</PostgresPassword>
+  <PostgresPort>5432</PostgresPort>
+  <PostgresHost>postgres</PostgresHost>
+  <PostgresMainDb>sonarr</PostgresMainDb>
+  <PostgresLogDb>sonarr_logs</PostgresLogDb>
+  
+3. Restart Sonarr so it connects to the empty postgres DB and create tables
+4. Stop Sonarr
+5. Connect to sonarr DB using postgres container
+
+# psql -U postgres -d postgres
+postgres=# \c sonarr
+DELETE FROM "QualityProfiles";
+DELETE FROM "QualityDefinitions";
+DELETE FROM "DelayProfiles";
+DELETE FROM "Metadata";
+DELETE FROM "Config";
+DELETE FROM "VersionInfo";
+DELETE FROM "ScheduledTasks";
+	
+6. Start migration with pgloader
+
+pgloader --with "quote identifiers" --with "data only" /data/_psql/lidarr/lidarr.db "postgresql://postgres:dNhv6pQMkpGM@postgres:5432/lidarr"
+pgloader --with "quote identifiers" --with "data only" /data/_psql/radarr/radarr.db "postgresql://postgres:dNhv6pQMkpGM@postgres:5432/radarr"
+pgloader --with "quote identifiers" --with "data only" /data/_psql/sonarr/sonarr.db "postgresql://postgres:dNhv6pQMkpGM@postgres:5432/sonarr"
+pgloader --with "quote identifiers" --with "data only" /data/_psql/prowlarr/prowlarr.db "postgresql://postgres:dNhv6pQMkpGM@postgres:5432/prowlarr"
+pgloader --with "quote identifiers" --with "data only" /data/_psql/readarr/readarr.db "postgresql://postgres:dNhv6pQMkpGM@postgres:5432/readarr"
+pgloader --with "quote identifiers" --with "data only" /data/_psql/whisparr/whisparr2.db "postgresql://postgres:dNhv6pQMkpGM@postgres:5432/whisparr"
+
+pgloader --with "quote identifiers" /data/_psql/bazarr/bazarr.db "postgresql://postgres:dNhv6pQMkpGM@postgres:5432/bazarr"
+
+
+7. Verify data in postgres db
+
+docker exec -it postgres psql -U sonarr_user -d sonarr -c "SELECT COUNT(*) FROM Series;"
+docker exec -it postgres psql -U sonarr_user -d sonarr -c "SELECT COUNT(*) FROM Episodes;"
