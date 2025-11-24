@@ -358,6 +358,26 @@ services:
 
 
 #-----------------------------------------------#
+#     BEETS - Music Library Management          #
+#-----------------------------------------------#
+  beets:
+    container_name: beets
+    image: lscr.io/linuxserver/beets:latest
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+    volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
+      - ${DATA_ROOT}/${BEETS_CONFIG}:/config
+      - ${DATA_ROOT}/${DATA_MEDIA}/music:/music
+      - ${DATA_ROOT}/${DATA_TORRENTS}:/downloads
+    networks:
+      - default
+    restart: unless-stopped
+
+
+#-----------------------------------------------#
 #     LIDARR - Music                            #
 #-----------------------------------------------#
   lidarr:
