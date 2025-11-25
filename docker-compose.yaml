@@ -144,6 +144,8 @@ services:
         condition: service_started
       sabnzbd:
         condition: service_started
+      scrutiny:
+        condition: service_started
       sonarr:
         condition: service_started
       tandoor:
@@ -641,6 +643,34 @@ services:
     restart: unless-stopped
     networks:
       - default
+
+
+#-----------------------------------------------#
+#     SCRUTINY - Hard Drive Health Monitor     #
+#-----------------------------------------------#
+  scrutiny:
+    container_name: scrutiny
+    image: ghcr.io/analogj/scrutiny:master-omnibus
+    privileged: true
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+      # Exclude virtual devices (WSL virtual disks don't support SMART)
+      SCRUTINY_EXCLUDE_PATTERNS: ".*Virtual.*|.*loop.*"
+    volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
+      - ${DATA_ROOT}/${SCRUTINY_CONFIG}:/opt/scrutiny/config
+      - ${DATA_ROOT}/${SCRUTINY_INFLUXDB}:/opt/scrutiny/influxdb
+      - /run/udev:/run/udev:ro
+    ports:
+      - "${SCRUTINY_PORT}:8080"
+      - "${SCRUTINY_INFLUXDB_PORT}:8086"
+    cap_add:
+      - SYS_RAWIO
+    networks:
+      - default
+    restart: unless-stopped
 
 
 #-----------------------------------------------#
