@@ -1,54 +1,18 @@
 services:
 #-----------------------------------------------#
-#     AUTHENTIK - SSO Management                #
+#     AUTHELIA - SSO Management                  #
 #-----------------------------------------------#
-  authentik-server:
-    image: ghcr.io/goauthentik/server:latest
-    command: server
-    environment:
-      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_TOKEN}
-      AUTHENTIK_LOG_LEVEL: info
-      AUTHENTIK_POSTGRESQL__HOST: postgres
-      AUTHENTIK_POSTGRESQL__NAME: authentik
-      AUTHENTIK_POSTGRESQL__USER: ${AUTHENTIK_DB_USER}
-      AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_DB_PASS}
-      AUTHENTIK_REDIS__HOST: redis
+  authelia:
+    image: authelia/authelia:latest
+    container_name: authelia
     volumes:
-      - ${DATA_ROOT}/${AUTHENTIK_DATA}/media:/media
-      - ${DATA_ROOT}/${AUTHENTIK_DATA}/templates:/templates
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_started
+      - ${DATA_ROOT}/authelia/config:/config
+    environment:
+      - TZ=${TZ}
     ports:
-      - "9000:9000"
-      - "9443:9443"
+      - "9091:9091"
     networks:
       - default
-    restart: unless-stopped
-
-  authentik-worker:
-    image: ghcr.io/goauthentik/server:latest
-    command: worker
-    privileged: true
-    environment:
-      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_TOKEN}
-      AUTHENTIK_POSTGRESQL__HOST: postgres
-      AUTHENTIK_POSTGRESQL__NAME: authentik
-      AUTHENTIK_POSTGRESQL__USER: ${AUTHENTIK_DB_USER}
-      AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_DB_PASS}
-      AUTHENTIK_REDIS__HOST: redis
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ${DATA_ROOT}/${AUTHENTIK_DATA}/media:/media
-      - ${DATA_ROOT}/${AUTHENTIK_DATA}/certs:/certs
-      - ${DATA_ROOT}/${AUTHENTIK_DATA}/templates:/templates
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_started
     restart: unless-stopped
 
 
@@ -114,7 +78,7 @@ services:
       - default
     restart: unless-stopped
     depends_on:
-      authentik-server:
+      authelia:
         condition: service_started
       calibre:
         condition: service_started
@@ -159,7 +123,7 @@ services:
 
 
 #-----------------------------------------------#
-#     CALIBRE - E-Book Reader                   #
+#     CALIBRE WEB - E-Book Reader Web UI        #
 #-----------------------------------------------#
   calibre:
     container_name: calibre
@@ -168,16 +132,40 @@ services:
       PUID: ${PUID}
       PGID: ${PGID}
       TZ: ${TZ}
-      PORT: ${CALIBRE_PORT}
+      PORT: ${CALIBRE_WEB_PORT}
     volumes:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${CALIBRE_CONFIG}:/config
       - ${DATA_ROOT}/${MEDIA_BOOKS}:/data/books
     ports:
-      - "${CALIBRE_PORT}:${CALIBRE_PORT}"
+      - "${CALIBRE_WEB_PORT}:${CALIBRE_WEB_PORT}"
     networks:
       - default
     restart: unless-stopped
+
+
+#-----------------------------------------------#
+#     CALIBRE CONTENT SERVER - For Readarr API  #
+#-----------------------------------------------#
+  calibre-server:
+    container_name: calibre-server
+    image: linuxserver/calibre:latest
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+    volumes:
+      - ${DATA_ROOT}/${CALIBRE_CONFIG}:/config
+      - ${DATA_ROOT}/${MEDIA_BOOKS}:/data/books
+    ports:
+      - "${CALIBRE_SERVER_PORT}:8080"
+    networks:
+      - default
+    restart: unless-stopped
+    depends_on:
+      - calibre
+    entrypoint: []
+    command: ["/usr/bin/calibre-server", "--port=8080", "--enable-local-write", "--trusted-ips=172.18.0.0/16", "/config/CalibreLibrary"]
 
 
 #-----------------------------------------------#
@@ -499,10 +487,11 @@ services:
       POSTGRES_INITDB_ARGS: "--locale=en_US.UTF-8 --encoding=UTF8"
       TZ: ${TZ}
       POSTGRES_PASSWORD: ${POSTGRES_PASS}
-      POSTGRES_USER: ${POSTGRES_USER}      
+      POSTGRES_USER: ${POSTGRES_USER}
+      PGDATA: /var/lib/postgresql/data      
     volumes:
       - ${DATA_ROOT}/${BACKUPS}:/backup
-      - /var/lib/postgres-data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
       - ./postgres-init:/docker-entrypoint-initdb.d
     ports:
       - "${POSTGRES_PORT}:${POSTGRES_PORT}"
@@ -626,6 +615,7 @@ services:
     volumes:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${READARR_CONFIG}:/config
+      - ${DATA_ROOT}/${CALIBRE_CONFIG}:/calibre
       - ${DATA_ROOT}/${DATA}:/data
     ports:
       - "${READARR_PORT}:${READARR_PORT}"
@@ -876,3 +866,11 @@ services:
 networks:
   default:
     driver: bridge
+
+#-----------------------------------------------#
+#     VOLUMES                                    #
+#-----------------------------------------------#
+volumes:
+  postgres-data:
+    external: true
+    name: media-servarr_postgres-data

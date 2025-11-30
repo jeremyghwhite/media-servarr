@@ -1,8 +1,10 @@
--- Create Authentik database
-CREATE DATABASE authentik;
-\connect authentik
-CREATE USER authentik_user WITH PASSWORD 'TmTN1Gc6voyPkp';
-GRANT ALL PRIVILEGES ON DATABASE authentik TO authentik_user;
+-- Create Authelia database
+CREATE USER authelia_user WITH PASSWORD 'TmTN1Gc6voyPkp';
+CREATE DATABASE authelia;
+\connect authelia
+GRANT ALL PRIVILEGES ON DATABASE authelia TO authelia_user;
+ALTER SCHEMA public OWNER TO authelia_user;
+GRANT ALL ON SCHEMA public TO authelia_user;
 
 -- Create Bazarr database and user
 CREATE USER bazarr_user WITH PASSWORD 'YmQFf8Z9UytZ';
