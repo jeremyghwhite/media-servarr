@@ -94,6 +94,8 @@ services:
         condition: service_started
       joplin:
         condition: service_started
+      komga:
+        condition: service_started
       lidarr:
         condition: service_started
       mylar3:
@@ -417,6 +419,27 @@ services:
         condition: service_started
       qbittorrent:
         condition: service_started
+
+
+#-----------------------------------------------#
+#     KOMGA - Comic Book Server                #
+#-----------------------------------------------#
+  komga:
+    container_name: komga
+    image: ghcr.io/gotson/komga:latest
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+    volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
+      - ${DATA_ROOT}/${KOMGA_CONFIG}:/config
+      - ${DATA_ROOT}/${MEDIA_COMICS}:/data
+    ports:
+      - "${KOMGA_PORT}:25600"
+    networks:
+      - default
+    restart: unless-stopped
 
 
 #-----------------------------------------------#
