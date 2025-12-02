@@ -803,7 +803,7 @@ services:
       - ${DATA_ROOT}/${TAUTULLI_CONFIG}:/config
       - ${DATA_ROOT}/${TAUTULLI_LOGS}:/logs
     ports:
-      - "48088:8181"
+      - "${TAUTULLI_PORT}:8181"
     networks:
       - default
 
