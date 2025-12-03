@@ -138,7 +138,6 @@ services:
     volumes:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${CALIBRE_CONFIG}:/config
-      - ${DATA_ROOT}/${MEDIA_BOOKS}:/data/books
     ports:
       - "${CALIBRE_WEB_PORT}:${CALIBRE_WEB_PORT}"
     networks:
@@ -496,6 +495,23 @@ services:
     networks:
       - default
     restart: unless-stopped
+
+
+#-----------------------------------------------#
+#     PORTAINER - Docker Management UI          #
+#-----------------------------------------------#
+  portainer:
+    container_name: portainer
+    image: portainer/portainer-ce:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${DATA_ROOT}/${PORTAINER_DATA}:/data
+    ports:
+      - "${PORTAINER_PORT}:9000"
+    networks:
+      - default
+    restart: unless-stopped
+
 
 
 #-----------------------------------------------#
