@@ -512,6 +512,25 @@ services:
       - default
     restart: unless-stopped
 
+  portainer-backup:
+    container_name: portainer-backup
+    image: alpine:latest
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
+    environment:
+      TZ: ${TZ}
+    volumes:
+      - ${DATA_ROOT}/server-backups:/backups
+      - ${DATA_ROOT}/${PORTAINER_DATA}:/source:ro
+      - ./portainer-backup.sh:/usr/local/bin/backup.sh:ro
+    entrypoint: ["/bin/sh", "/usr/local/bin/backup.sh"]
+    networks:
+      - default
+    depends_on:
+      - portainer
+    # Run manually with: docker-compose run --rm portainer-backup
+    # Or schedule with cron/task scheduler
+
 
 
 #-----------------------------------------------#
@@ -519,7 +538,7 @@ services:
 #-----------------------------------------------#
   postgres:
     container_name: postgres
-    image: pgvector/pgvector:pg14
+    image: pgvector/pgvector:pg18
     labels:
       - "com.centurylinklabs.watchtower.enable=false"
     environment:
@@ -545,7 +564,7 @@ services:
       
   postgres-backup:
     container_name: postgres-backup
-    image: postgres:14
+    image: postgres:18
     labels:
       - "com.centurylinklabs.watchtower.enable=false"
     environment:
@@ -911,5 +930,4 @@ networks:
 #-----------------------------------------------#
 volumes:
   postgres-data:
-    external: true
     name: media-servarr_postgres-data
