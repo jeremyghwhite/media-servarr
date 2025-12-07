@@ -122,6 +122,8 @@ services:
         condition: service_healthy
       whisparr:
         condition: service_started
+      tunarr:
+        condition: service_started
 
 
 #-----------------------------------------------#
@@ -841,6 +843,29 @@ services:
       - "${TAUTULLI_PORT}:8181"
     networks:
       - default
+
+
+#-----------------------------------------------#
+#     TUNARR - Custom Streaming Channels        #
+#-----------------------------------------------#
+  tunarr:
+    container_name: tunarr
+    image: chrisbenincasa/tunarr:latest
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+      TUNARR_SERVER_ADMIN_MODE: "true"
+      TUNARR_SERVER_TRUST_PROXY: "true"
+    volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
+      - ${DATA_ROOT}/${TUNARR_CONFIG}:/config/tunarr
+      - ${DATA_ROOT}/${DATA_MEDIA}:/media
+    ports:
+      - "${TUNARR_PORT}:8000"
+    networks:
+      - default
+    restart: unless-stopped
 
 
 #-----------------------------------------------#
