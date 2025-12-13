@@ -30,6 +30,7 @@ services:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${BAZARR_CONFIG}:/config
       - ${DATA_ROOT}/${DATA}:/data
+      - T:/:/data/media/tv
     ports:
       - "${BAZARR_PORT}:6767"
     networks:
@@ -77,6 +78,12 @@ services:
     networks:
       - default
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "nc -zv sonarr 8989 >/dev/null 2>&1 && nc -zv radarr 7878 >/dev/null 2>&1 && nc -zv lidarr 8686 >/dev/null 2>&1 || exit 1"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     depends_on:
       authelia:
         condition: service_started
@@ -85,6 +92,8 @@ services:
       homeassistant:
         condition: service_started
       homarr:
+        condition: service_started
+      homepage:
         condition: service_started
       immich:
         condition: service_healthy
@@ -249,6 +258,23 @@ services:
       DB_PASSWORD: ${HOMARR_DB_PASS}
     ports:
       - '${HOMARR_PORT}:${HOMARR_PORT}'
+    networks:
+      - default
+    restart: unless-stopped
+
+
+#-----------------------------------------------#
+#     HOMEPAGE - Modern Dashboard               #
+#-----------------------------------------------#
+  homepage:
+    container_name: homepage
+    image: ghcr.io/benphelps/homepage:latest
+    volumes:
+      - ${DATA_ROOT}/${BACKUPS}:/backup
+      - ./configs/homepage:/app/config
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - "${HOMEPAGE_PORT}:3000"
     networks:
       - default
     restart: unless-stopped
@@ -492,6 +518,7 @@ services:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${PLEX_CONFIG}:/config
       - ${DATA_ROOT}/${DATA_MEDIA}:/data/media
+      - T:/:/data/media/tv
     ports:
       - "${PLEX_PORT}:32400"
     networks:
@@ -576,13 +603,37 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASS}
       TZ: America/Halifax
     volumes:
-      - ${DATA_ROOT}/server-backups:/backups
-      - /home/jeremy/media-servarr/postgres-backup.sh:/usr/local/bin/backup.sh:ro
-    entrypoint: ["/bin/bash", "/usr/local/bin/backup.sh"]
+      - E:/media-servarr-app-data/server-backups:/backups
+      - ./postgres-backup.sh:/usr/local/bin/backup.sh:ro
+      - ./postgres-backup-cron.sh:/usr/local/bin/backup-cron.sh:ro
+      - ./portainer-backup.sh:/usr/local/bin/portainer-backup.sh:ro
+      - ${DATA_ROOT}/${PORTAINER_DATA}:/source-portainer:ro
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        set -e
+        # Install cron if not available
+        if ! command -v cron &> /dev/null; then
+          apt-get update && apt-get install -y cron && rm -rf /var/lib/apt/lists/*
+        fi
+        # Copy cron wrapper to writable location (backup.sh is already executable from mount)
+        # /usr/local/bin should be writable, so we can copy the wrapper there
+        cp /usr/local/bin/backup-cron.sh /usr/local/bin/backup-cron-wrapper.sh
+        chmod +x /usr/local/bin/backup-cron-wrapper.sh
+        # Set up crontab (wrapper script will read env vars from /proc/1/environ)
+        echo "30 2 * * * /usr/local/bin/backup-cron-wrapper.sh" | crontab -
+        # Start cron in foreground
+        echo "PostgreSQL backup scheduler started. Backups will run daily at 2:30 AM ${TZ}"
+        echo "Current time: $(date)"
+        echo "Crontab installed:"
+        crontab -l
+        cron -f
     networks:
       - default
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
     
     
 #-----------------------------------------------#
@@ -759,6 +810,7 @@ services:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${SONARR_CONFIG}:/config
       - ${DATA_ROOT}/${DATA_MEDIA}:/data/media
+      - T:/:/data/media/tv
     ports:
       - "${SONARR_PORT}:${SONARR_PORT}"
     networks:
@@ -779,6 +831,7 @@ services:
       PLEXSERVER: http://plex:${PLEX_PORT}
     volumes:
       - ${DATA_ROOT}/${DATA_MEDIA}:/data/media
+      - T:/:/data/media/tv
       - ${DATA_ROOT}/${SUBGENAI_DATA}/models:/subgen/models
       - ${DATA_ROOT}/${SUBGENAI_DATA}/subgen.env:/subgen/subgen.env:ro
     ports:
