@@ -5,6 +5,7 @@
 !.gitignore
 !.gitattributes
 !README.md
+!AGENTS.md
 !.env
 !.env.example
 !compose*.yml
