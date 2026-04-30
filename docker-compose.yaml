@@ -578,7 +578,7 @@ services:
       PGDATA: /var/lib/postgresql/data      
     volumes:
       - ${DATA_ROOT}/${BACKUPS}:/backup
-      - postgres-data:/var/lib/postgresql/data
+      - /var/lib/postgres-data:/var/lib/postgresql/data
       - ./postgres-init:/docker-entrypoint-initdb.d
     ports:
       - "${POSTGRES_PORT}:${POSTGRES_PORT}"
@@ -1002,10 +1002,3 @@ services:
 networks:
   default:
     driver: bridge
-
-#-----------------------------------------------#
-#     VOLUMES                                    #
-#-----------------------------------------------#
-volumes:
-  postgres-data:
-    name: media-servarr_postgres-data
