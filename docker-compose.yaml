@@ -1008,4 +1008,5 @@ networks:
 #-----------------------------------------------#
 volumes:
   postgres-data:
+    external: true
     name: media-servarr_postgres-data
