@@ -16,6 +16,8 @@
 # Allow focused regression tests for deployment config
 !tests/
 !tests/**/*.py
+tests/**/__pycache__/
+tests/**/*.pyc
 
 # Keep DB/init snippets that are part of deployment
 !postgres-init/
