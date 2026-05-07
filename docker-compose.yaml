@@ -30,7 +30,7 @@ services:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${BAZARR_CONFIG}:/config
       - ${DATA_ROOT}/${DATA}:/data
-      - T:/:/data/media/tv
+      - ${DATA_ROOT}/${MEDIA_TV}:/data/media/tv
     ports:
       - "${BAZARR_PORT}:6767"
     networks:
@@ -221,11 +221,11 @@ services:
       PGID: ${PGID}
       TZ: ${TZ}
       UMASK_SET: 022
-      SONARR_URL: "http://sonarr:${SONARR_PORT}"
+      SONARR_URL: "http://sonarr:8989"
       SONARR_KEY: ${SONARR_API_KEY}
-      RADARR_URL: "http://radarr:${RADARR_PORT}"
+      RADARR_URL: "http://radarr:7878"
       RADARR_KEY: ${RADARR_API_KEY}
-      LIDARR_URL: "http://lidarr:${LIDARR_PORT}"
+      LIDARR_URL: "http://lidarr:8686"
       LIDARR_KEY: ${LIDARR_API_KEY}
     volumes:
       - ${DATA_ROOT}/${BACKUPS}:/backup
@@ -268,7 +268,7 @@ services:
 #-----------------------------------------------#
   homepage:
     container_name: homepage
-    image: ghcr.io/benphelps/homepage:latest
+    image: ghcr.io/gethomepage/homepage:latest
     volumes:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ./configs/homepage:/app/config
@@ -415,7 +415,7 @@ services:
       - ${DATA_ROOT}/${LIDARR_CONFIG}:/config
       - ${DATA_ROOT}/${DATA}:/data
     ports:
-      - "${LIDARR_PORT}:${LIDARR_PORT}"
+      - "${LIDARR_PORT}:8686"
     networks:
       - default
     restart: unless-stopped
@@ -518,7 +518,7 @@ services:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${PLEX_CONFIG}:/config
       - ${DATA_ROOT}/${DATA_MEDIA}:/data/media
-      - T:/:/data/media/tv
+      - ${DATA_ROOT}/${MEDIA_TV}:/data/media/tv
     ports:
       - "${PLEX_PORT}:32400"
     networks:
@@ -650,7 +650,7 @@ services:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${PROWLARR_CONFIG}:/config
     ports:
-      - "${PROWLARR_PORT}:${PROWLARR_PORT}"
+      - "${PROWLARR_PORT}:9696"
     networks:
       - default
     restart: unless-stopped
@@ -700,7 +700,7 @@ services:
       - ${DATA_ROOT}/${RADARR_CONFIG}:/config
       - ${DATA_ROOT}/${DATA}:/data
     ports:
-      - "${RADARR_PORT}:${RADARR_PORT}"
+      - "${RADARR_PORT}:7878"
     networks:
       - default
     restart: unless-stopped
@@ -729,7 +729,7 @@ services:
       - ${DATA_ROOT}/${CALIBRE_CONFIG}:/calibre
       - ${DATA_ROOT}/${DATA}:/data
     ports:
-      - "${READARR_PORT}:${READARR_PORT}"
+      - "${READARR_PORT}:8787"
     networks:
       - default
     restart: unless-stopped
@@ -810,9 +810,9 @@ services:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${SONARR_CONFIG}:/config
       - ${DATA_ROOT}/${DATA_MEDIA}:/data/media
-      - T:/:/data/media/tv
+      - ${DATA_ROOT}/${MEDIA_TV}:/data/media/tv
     ports:
-      - "${SONARR_PORT}:${SONARR_PORT}"
+      - "${SONARR_PORT}:8989"
     networks:
       - default
     restart: unless-stopped
@@ -831,7 +831,7 @@ services:
       PLEXSERVER: http://plex:${PLEX_PORT}
     volumes:
       - ${DATA_ROOT}/${DATA_MEDIA}:/data/media
-      - T:/:/data/media/tv
+      - ${DATA_ROOT}/${MEDIA_TV}:/data/media/tv
       - ${DATA_ROOT}/${SUBGENAI_DATA}/models:/subgen/models
       - ${DATA_ROOT}/${SUBGENAI_DATA}/subgen.env:/subgen/subgen.env:ro
     ports:
@@ -851,8 +851,8 @@ services:
     image: vabene1111/recipes:tandoor-v1
     environment:
       TZ: ${TZ}
-      POSTGRES_HOST: postgres://postgres:5432
-      POSTGRES_DB: djangodb
+      POSTGRES_HOST: postgres
+      POSTGRES_DB: tandoor
       POSTGRES_PORT: 5432
       POSTGRES_USER: ${TANDOOR_DB_USER}
       POSTGRES_PASSWORD: ${TANDOOR_DB_PASS}
@@ -971,7 +971,7 @@ services:
       - ${DATA_ROOT}/${WHISPARR_CONFIG}:/config
       - ${DATA_ROOT}/${DATA}:/data
     ports:
-      - "${WHISPARR_PORT}:${WHISPARR_PORT}"
+      - "${WHISPARR_PORT}:6969"
     networks:
       - default
     restart: unless-stopped
