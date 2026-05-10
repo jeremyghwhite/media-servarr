@@ -16,6 +16,7 @@
 # Allow focused safety tests
 !tests/
 !tests/**/*.py
+tests/**/__pycache__/
 
 # Keep DB/init snippets that are part of deployment
 !postgres-init/
