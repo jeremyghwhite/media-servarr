@@ -13,6 +13,10 @@
 !setup-*.sh
 !setup-*.ps1
 
+# Allow focused safety tests
+!tests/
+!tests/**/*.py
+
 # Keep DB/init snippets that are part of deployment
 !postgres-init/
 !postgres-init/**
