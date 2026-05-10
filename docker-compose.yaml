@@ -567,7 +567,7 @@ services:
 #-----------------------------------------------#
   postgres:
     container_name: postgres
-    image: pgvector/pgvector:pg18
+    image: pgvector/pgvector:pg14
     labels:
       - "com.centurylinklabs.watchtower.enable=false"
     environment:
@@ -593,7 +593,7 @@ services:
       
   postgres-backup:
     container_name: postgres-backup
-    image: postgres:18
+    image: postgres:14
     labels:
       - "com.centurylinklabs.watchtower.enable=false"
     environment:
@@ -1008,4 +1008,5 @@ networks:
 #-----------------------------------------------#
 volumes:
   postgres-data:
+    external: true
     name: media-servarr_postgres-data
