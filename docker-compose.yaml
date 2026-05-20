@@ -567,7 +567,9 @@ services:
 #-----------------------------------------------#
   postgres:
     container_name: postgres
-    image: pgvector/pgvector:pg18
+    # The existing media-servarr_postgres-data volume contains a PG14 cluster.
+    # Major upgrades require an explicit dump/restore or pg_upgrade migration.
+    image: pgvector/pgvector:pg14
     labels:
       - "com.centurylinklabs.watchtower.enable=false"
     environment:
@@ -593,7 +595,7 @@ services:
       
   postgres-backup:
     container_name: postgres-backup
-    image: postgres:18
+    image: postgres:14
     labels:
       - "com.centurylinklabs.watchtower.enable=false"
     environment:
