@@ -20,6 +20,8 @@
 # Keep lightweight regression tests for deployment invariants
 !tests/
 !tests/**
+tests/**/__pycache__/
+tests/**/*.py[cod]
 
 # Allow config directories (if added via symlink or copy)
 # Note: We track files inside, not the symlinks/junctions themselves
