@@ -265,9 +265,11 @@ BEGIN
   END IF;
 END
 $$;
-SELECT 'CREATE DATABASE tandoor' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'tandoor')\gexec
-\connect tandoor
-GRANT ALL PRIVILEGES ON DATABASE tandoor TO tandoor_user;
+SELECT 'CREATE DATABASE djangodb OWNER tandoor_user' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'djangodb')\gexec
+\connect djangodb
+ALTER SCHEMA public OWNER TO tandoor_user;
+GRANT ALL ON SCHEMA public TO tandoor_user;
+GRANT ALL PRIVILEGES ON DATABASE djangodb TO tandoor_user;
 
 
 -- Create the Vaultwarden database
