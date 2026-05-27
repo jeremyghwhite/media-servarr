@@ -13,6 +13,10 @@
 !setup-*.sh
 !setup-*.ps1
 
+# Allow repository tests
+!tests/
+!tests/**
+
 # Keep DB/init snippets that are part of deployment
 !postgres-init/
 !postgres-init/**
