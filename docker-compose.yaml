@@ -851,7 +851,7 @@ services:
     image: vabene1111/recipes:tandoor-v1
     environment:
       TZ: ${TZ}
-      POSTGRES_HOST: postgres://postgres:5432
+      POSTGRES_HOST: postgres
       POSTGRES_DB: djangodb
       POSTGRES_PORT: 5432
       POSTGRES_USER: ${TANDOOR_DB_USER}
