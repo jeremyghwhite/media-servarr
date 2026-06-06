@@ -11,6 +11,9 @@
 !docker-compose.yaml
 !rootCA.crt
 !setup-*.sh
+!postgres-backup.sh
+!postgres-backup-cron.sh
+!portainer-backup.sh
 !setup-*.ps1
 
 # Keep DB/init snippets that are part of deployment

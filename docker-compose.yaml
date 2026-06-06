@@ -79,7 +79,7 @@ services:
       - default
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "nc -zv sonarr 8989 >/dev/null 2>&1 && nc -zv radarr 7878 >/dev/null 2>&1 && nc -zv lidarr 8686 >/dev/null 2>&1 || exit 1"]
+      test: ["CMD-SHELL", "nc -zv sonarr ${SONARR_PORT} >/dev/null 2>&1 && nc -zv radarr ${RADARR_PORT} >/dev/null 2>&1 && nc -zv lidarr ${LIDARR_PORT} >/dev/null 2>&1 || exit 1"]
       interval: 60s
       timeout: 10s
       retries: 3
@@ -149,6 +149,7 @@ services:
     volumes:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${CALIBRE_CONFIG}:/config
+      - ${DATA_ROOT}/${MEDIA_BOOKS}:/data/books
     ports:
       - "${CALIBRE_WEB_PORT}:${CALIBRE_WEB_PORT}"
     networks:
@@ -549,7 +550,7 @@ services:
     environment:
       TZ: ${TZ}
     volumes:
-      - ${DATA_ROOT}/server-backups:/backups
+      - ${DATA_ROOT}/${BACKUPS}:/backups
       - ${DATA_ROOT}/${PORTAINER_DATA}:/source:ro
       - ./portainer-backup.sh:/usr/local/bin/backup.sh:ro
     entrypoint: ["/bin/sh", "/usr/local/bin/backup.sh"]
@@ -567,7 +568,7 @@ services:
 #-----------------------------------------------#
   postgres:
     container_name: postgres
-    image: pgvector/pgvector:pg18
+    image: pgvector/pgvector:pg14
     labels:
       - "com.centurylinklabs.watchtower.enable=false"
     environment:
@@ -593,7 +594,7 @@ services:
       
   postgres-backup:
     container_name: postgres-backup
-    image: postgres:18
+    image: postgres:14
     labels:
       - "com.centurylinklabs.watchtower.enable=false"
     environment:
@@ -603,7 +604,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASS}
       TZ: America/Halifax
     volumes:
-      - E:/media-servarr-app-data/server-backups:/backups
+      - ${DATA_ROOT}/${BACKUPS}:/backups
       - ./postgres-backup.sh:/usr/local/bin/backup.sh:ro
       - ./postgres-backup-cron.sh:/usr/local/bin/backup-cron.sh:ro
       - ./portainer-backup.sh:/usr/local/bin/portainer-backup.sh:ro
@@ -851,7 +852,7 @@ services:
     image: vabene1111/recipes:tandoor-v1
     environment:
       TZ: ${TZ}
-      POSTGRES_HOST: postgres://postgres:5432
+      POSTGRES_HOST: postgres
       POSTGRES_DB: djangodb
       POSTGRES_PORT: 5432
       POSTGRES_USER: ${TANDOOR_DB_USER}
