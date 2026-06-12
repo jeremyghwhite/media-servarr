@@ -603,7 +603,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASS}
       TZ: America/Halifax
     volumes:
-      - E:/media-servarr-app-data/server-backups:/backups
+      - ${DATA_ROOT}/${BACKUPS}:/backups
       - ./postgres-backup.sh:/usr/local/bin/backup.sh:ro
       - ./postgres-backup-cron.sh:/usr/local/bin/backup-cron.sh:ro
       - ./portainer-backup.sh:/usr/local/bin/portainer-backup.sh:ro
