@@ -567,7 +567,7 @@ services:
 #-----------------------------------------------#
   postgres:
     container_name: postgres
-    image: pgvector/pgvector:pg18
+    image: pgvector/pgvector:pg14
     labels:
       - "com.centurylinklabs.watchtower.enable=false"
     environment:
@@ -593,7 +593,7 @@ services:
       
   postgres-backup:
     container_name: postgres-backup
-    image: postgres:18
+    image: postgres:14
     labels:
       - "com.centurylinklabs.watchtower.enable=false"
     environment:
@@ -603,7 +603,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASS}
       TZ: America/Halifax
     volumes:
-      - E:/media-servarr-app-data/server-backups:/backups
+      - ${DATA_ROOT}/${BACKUPS}:/backups
       - ./postgres-backup.sh:/usr/local/bin/backup.sh:ro
       - ./postgres-backup-cron.sh:/usr/local/bin/backup-cron.sh:ro
       - ./portainer-backup.sh:/usr/local/bin/portainer-backup.sh:ro
