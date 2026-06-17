@@ -567,7 +567,7 @@ services:
 #-----------------------------------------------#
   postgres:
     container_name: postgres
-    image: pgvector/pgvector:pg18
+    image: pgvector/pgvector:pg14
     labels:
       - "com.centurylinklabs.watchtower.enable=false"
     environment:
@@ -593,7 +593,7 @@ services:
       
   postgres-backup:
     container_name: postgres-backup
-    image: postgres:18
+    image: postgres:14
     labels:
       - "com.centurylinklabs.watchtower.enable=false"
     environment:
@@ -851,7 +851,7 @@ services:
     image: vabene1111/recipes:tandoor-v1
     environment:
       TZ: ${TZ}
-      POSTGRES_HOST: postgres://postgres:5432
+      POSTGRES_HOST: postgres
       POSTGRES_DB: djangodb
       POSTGRES_PORT: 5432
       POSTGRES_USER: ${TANDOOR_DB_USER}
@@ -1008,4 +1008,5 @@ networks:
 #-----------------------------------------------#
 volumes:
   postgres-data:
+    external: true
     name: media-servarr_postgres-data
