@@ -12,6 +12,9 @@
 !rootCA.crt
 !setup-*.sh
 !setup-*.ps1
+!postgres-backup.sh
+!postgres-backup-cron.sh
+!portainer-backup.sh
 
 # Keep DB/init snippets that are part of deployment
 !postgres-init/
