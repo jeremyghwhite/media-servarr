@@ -30,7 +30,6 @@ services:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${BAZARR_CONFIG}:/config
       - ${DATA_ROOT}/${DATA}:/data
-      - T:/:/data/media/tv
     ports:
       - "${BAZARR_PORT}:6767"
     networks:
@@ -518,7 +517,6 @@ services:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${PLEX_CONFIG}:/config
       - ${DATA_ROOT}/${DATA_MEDIA}:/data/media
-      - T:/:/data/media/tv
     ports:
       - "${PLEX_PORT}:32400"
     networks:
@@ -549,7 +547,7 @@ services:
     environment:
       TZ: ${TZ}
     volumes:
-      - ${DATA_ROOT}/server-backups:/backups
+      - ${DATA_ROOT}/${BACKUPS}:/backups
       - ${DATA_ROOT}/${PORTAINER_DATA}:/source:ro
       - ./portainer-backup.sh:/usr/local/bin/backup.sh:ro
     entrypoint: ["/bin/sh", "/usr/local/bin/backup.sh"]
@@ -567,7 +565,7 @@ services:
 #-----------------------------------------------#
   postgres:
     container_name: postgres
-    image: pgvector/pgvector:pg18
+    image: pgvector/pgvector:pg14
     labels:
       - "com.centurylinklabs.watchtower.enable=false"
     environment:
@@ -593,7 +591,7 @@ services:
       
   postgres-backup:
     container_name: postgres-backup
-    image: postgres:18
+    image: postgres:14
     labels:
       - "com.centurylinklabs.watchtower.enable=false"
     environment:
@@ -603,7 +601,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASS}
       TZ: America/Halifax
     volumes:
-      - E:/media-servarr-app-data/server-backups:/backups
+      - ${DATA_ROOT}/${BACKUPS}:/backups
       - ./postgres-backup.sh:/usr/local/bin/backup.sh:ro
       - ./postgres-backup-cron.sh:/usr/local/bin/backup-cron.sh:ro
       - ./portainer-backup.sh:/usr/local/bin/portainer-backup.sh:ro
@@ -810,7 +808,6 @@ services:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${SONARR_CONFIG}:/config
       - ${DATA_ROOT}/${DATA_MEDIA}:/data/media
-      - T:/:/data/media/tv
     ports:
       - "${SONARR_PORT}:${SONARR_PORT}"
     networks:
@@ -831,7 +828,6 @@ services:
       PLEXSERVER: http://plex:${PLEX_PORT}
     volumes:
       - ${DATA_ROOT}/${DATA_MEDIA}:/data/media
-      - T:/:/data/media/tv
       - ${DATA_ROOT}/${SUBGENAI_DATA}/models:/subgen/models
       - ${DATA_ROOT}/${SUBGENAI_DATA}/subgen.env:/subgen/subgen.env:ro
     ports:
@@ -1008,4 +1004,5 @@ networks:
 #-----------------------------------------------#
 volumes:
   postgres-data:
+    external: true
     name: media-servarr_postgres-data
