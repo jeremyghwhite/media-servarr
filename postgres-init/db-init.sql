@@ -106,9 +106,15 @@ BEGIN
   END IF;
 END
 $$;
-SELECT 'CREATE DATABASE joplin' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'joplin')\gexec
+SELECT 'CREATE DATABASE joplin OWNER joplin_user' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'joplin')\gexec
 \connect joplin
+ALTER DATABASE joplin OWNER TO joplin_user;
+ALTER SCHEMA public OWNER TO joplin_user;
+GRANT ALL ON SCHEMA public TO joplin_user;
 GRANT ALL PRIVILEGES ON DATABASE joplin TO joplin_user;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO joplin_user;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO joplin_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO joplin_user;
 
 
 -- Create Lidarr database and user
@@ -265,9 +271,15 @@ BEGIN
   END IF;
 END
 $$;
-SELECT 'CREATE DATABASE tandoor' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'tandoor')\gexec
-\connect tandoor
-GRANT ALL PRIVILEGES ON DATABASE tandoor TO tandoor_user;
+SELECT 'CREATE DATABASE djangodb OWNER tandoor_user' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'djangodb')\gexec
+\connect djangodb
+ALTER DATABASE djangodb OWNER TO tandoor_user;
+ALTER SCHEMA public OWNER TO tandoor_user;
+GRANT ALL ON SCHEMA public TO tandoor_user;
+GRANT ALL PRIVILEGES ON DATABASE djangodb TO tandoor_user;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO tandoor_user;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO tandoor_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO tandoor_user;
 
 
 -- Create the Vaultwarden database
