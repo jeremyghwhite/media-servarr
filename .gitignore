@@ -12,6 +12,8 @@
 !rootCA.crt
 !setup-*.sh
 !setup-*.ps1
+!tests/
+!tests/**
 
 # Keep DB/init snippets that are part of deployment
 !postgres-init/
