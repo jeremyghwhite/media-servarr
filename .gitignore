@@ -41,3 +41,6 @@
 /configs/lidarr
 /configs/radarr
 /configs/sonarr
+# Python bytecode
+**/__pycache__/
+*.py[cod]
