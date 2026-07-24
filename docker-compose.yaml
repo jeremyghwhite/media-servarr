@@ -809,7 +809,10 @@ services:
     volumes:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${SONARR_CONFIG}:/config
-      - ${DATA_ROOT}/${DATA_MEDIA}:/data/media
+      # Mount the full shared data tree so Sonarr can see download-client
+      # paths (/data/torrents, /data/usenet) and media paths together —
+      # matching Radarr/Lidarr and enabling hardlink/move imports.
+      - ${DATA_ROOT}/${DATA}:/data
       - T:/:/data/media/tv
     ports:
       - "${SONARR_PORT}:${SONARR_PORT}"
@@ -828,7 +831,9 @@ services:
     environment:
       WEBHOOKPORT: ${SUBGEN_PORT}
       PLEXTOKEN: ${PLEX_TOKEN}
-      PLEXSERVER: http://plex:${PLEX_PORT}
+      # Use the in-container Plex listen port. ${PLEX_PORT} is only the
+      # host publish mapping and is unreachable on the Docker network.
+      PLEXSERVER: http://plex:32400
     volumes:
       - ${DATA_ROOT}/${DATA_MEDIA}:/data/media
       - T:/:/data/media/tv
