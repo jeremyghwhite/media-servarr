@@ -826,7 +826,10 @@ services:
     image: mccloud/subgen:cpu
     tty: true
     environment:
-      WEBHOOKPORT: ${SUBGEN_PORT}
+      # Must match the container-side publish port below. ${SUBGEN_PORT} is only
+      # the host mapping; setting WEBHOOKPORT to it makes Subgen listen on a
+      # port nothing publishes (Bazarr/docs expect :9000 on the Docker network).
+      WEBHOOKPORT: 9000
       PLEXTOKEN: ${PLEX_TOKEN}
       PLEXSERVER: http://plex:${PLEX_PORT}
     volumes:

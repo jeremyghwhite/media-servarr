@@ -13,6 +13,12 @@
 !setup-*.sh
 !setup-*.ps1
 
+# Allow focused regression tests for deployment config
+!tests/
+!tests/**/*.py
+**/__pycache__/
+*.py[cod]
+
 # Keep DB/init snippets that are part of deployment
 !postgres-init/
 !postgres-init/**
