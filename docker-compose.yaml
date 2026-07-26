@@ -381,6 +381,9 @@ services:
     environment:
       APP_BASE_URL: https://joplin.phoenix-server.cc
       APP_PORT: ${JOPLIN_PORT}
+      # Required to select Postgres; without this Joplin Server defaults to SQLite
+      # even when POSTGRES_* vars are present, leaving the init DB unused.
+      DB_CLIENT: pg
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
       POSTGRES_DATABASE: joplin
@@ -434,7 +437,10 @@ services:
     volumes:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${MYLAR3_CONFIG}:/config
-      - ${DATA_ROOT}/${DATA_MEDIA}:/data
+      # Mount the full shared data tree so Mylar3 can see download-client
+      # paths (/data/torrents, /data/usenet) and media paths together —
+      # matching Radarr/Lidarr and enabling post-processing imports.
+      - ${DATA_ROOT}/${DATA}:/data
       - ${DATA_ROOT}/${MEDIA_COMICS}:/comics
     ports:
       - "${MYLAR3_PORT}:${MYLAR3_PORT}"
@@ -690,11 +696,14 @@ services:
       PUID: ${PUID}
       PGID: ${PGID}
       TZ: ${TZ}
-      RADARR__POSTGRES_HOST: postgres
-      RADARR__POSTGRES_PORT: 5432
-      RADARR__POSTGRES_USER: ${RADARR_DB_USER}
-      RADARR__POSTGRES_PASSWORD: ${RADARR_DB_PASS}
-      RADARR__POSTGRES_MAINDB: radarr
+      # Servarr env overrides require RADARR__POSTGRES__* (double underscores).
+      # RADARR__POSTGRES_* is ignored, so Radarr would silently stay on SQLite.
+      RADARR__POSTGRES__HOST: postgres
+      RADARR__POSTGRES__PORT: 5432
+      RADARR__POSTGRES__USER: ${RADARR_DB_USER}
+      RADARR__POSTGRES__PASSWORD: ${RADARR_DB_PASS}
+      RADARR__POSTGRES__MAINDB: ${RADARR_MAINDB}
+      RADARR__POSTGRES__LOGDB: ${RADARR_LOGDB}
     volumes:
       - ${DATA_ROOT}/${BACKUPS}:/backup
       - ${DATA_ROOT}/${RADARR_CONFIG}:/config
