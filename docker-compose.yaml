@@ -718,7 +718,9 @@ services:
 #-----------------------------------------------#
   readarr:
     container_name: readarr
-    image: ghcr.io/hotio/readarr:latest
+    # hotio/readarr was unpublished after upstream Readarr retirement (GHCR DENIED).
+    # Pin the last pullable linuxserver nightly so compose/Caddy can still start.
+    image: lscr.io/linuxserver/readarr:0.4.19-nightly
     environment:
       PUID: ${PUID}
       PGID: ${PGID}
